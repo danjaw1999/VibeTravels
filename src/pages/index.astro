@@ -1,0 +1,11 @@
+---
+import '@/styles/globals.css'
+import Layout from '../layouts/Layout.astro';
+import { TravelForm } from '@/components/TravelForm';
+---
+
+<Layout title="VibeTravels - AI Travel Planner">
+  <main>
+    <TravelForm client:load />
+  </main>
+</Layout>
