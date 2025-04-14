@@ -1,0 +1,101 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import { supabase } from '@/db/supabase.client';
+
+const accessToken = Astro.cookies.get("sb-access-token");
+const refreshToken = Astro.cookies.get("sb-refresh-token");
+
+if (!accessToken || !refreshToken) {
+  return Astro.redirect("/login");
+}
+let session = null;
+try {
+  session = await supabase.auth.setSession({
+    refresh_token: refreshToken.value,
+    access_token: accessToken.value,
+  });
+  if (session.error) {
+    Astro.cookies.delete("sb-access-token", {
+      path: "/",
+    });
+    Astro.cookies.delete("sb-refresh-token", {
+      path: "/",
+    });
+    return Astro.redirect("/login");
+  }
+} catch (error) {
+  Astro.cookies.delete("sb-access-token", {
+    path: "/",
+  });
+  Astro.cookies.delete("sb-refresh-token", {
+    path: "/",
+  });
+  return Astro.redirect("/login");
+}
+
+const email = session.data.user?.email;
+
+// const user = Astro.locals.user;
+// if (!user) return Astro.redirect('/login');
+---
+
+
+<Layout title="Welcome to VibeTravels">
+  <main class="container mx-auto px-4 py-8">
+    <div 
+      class="text-center mb-12"
+      transition:animate="slide"
+    >
+      <h1 class="text-4xl font-bold mb-4">Welcome {email} to VibeTravels</h1>
+      <p class="text-xl text-muted-foreground">Start sharing your travel experiences</p>
+    </div>
+
+    <div 
+      class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto"
+      transition:animate="fade"
+    >
+      <Card>
+        <CardHeader>
+          <CardTitle>Create Travel Note</CardTitle>
+          <CardDescription>Share your travel experiences with others</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p class="text-muted-foreground">
+            Document your journey, add photos, and share your favorite moments with the community.
+          </p>
+        </CardContent>
+        <CardFooter>
+          <Button asChild>
+            <a href="/travel-notes/new">Create Note</a>
+          </Button>
+        </CardFooter>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Explore Notes</CardTitle>
+          <CardDescription>Discover travel stories from around the world</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p class="text-muted-foreground">
+            Browse through travel notes from other adventurers and get inspired for your next trip.
+          </p>
+        </CardContent>
+        <CardFooter>
+          <Button asChild variant="secondary">
+            <a href="/travel-notes">Browse Notes</a>
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
+  </main>
+</Layout> 

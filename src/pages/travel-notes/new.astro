@@ -1,0 +1,32 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import TravelNoteForm from '@/components/TravelNoteForm';
+import { ViewTransitions } from 'astro:transitions';
+---
+
+<Layout title="Create New Travel Note">
+  <ViewTransitions />
+  
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-8">Create New Travel Note</h1>
+    
+    <div class="max-w-2xl mx-auto">
+      <TravelNoteForm client:load onSubmit={async (data) => {
+        const response = await fetch("/api/travel-notes", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to create travel note");
+        }
+
+        window.location.href = "/travel-notes";
+      }} />
+    </div>
+  </main>
+</Layout> 

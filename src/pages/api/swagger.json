@@ -1,0 +1,207 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "VibeTravels API",
+    "version": "1.0.0",
+    "description": "API for managing travel notes and attractions"
+  },
+  "paths": {
+    "/api/travel-notes/{id}": {
+      "get": {
+        "summary": "Get a travel note by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the travel note"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Travel note found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelNoteDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Travel note not found"
+          }
+        }
+      },
+      "patch": {
+        "summary": "Update a travel note",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the travel note to update"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TravelNoteUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Travel note updated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TravelNoteDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request data"
+          },
+          "404": {
+            "description": "Travel note not found"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a travel note",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "The ID of the travel note to delete"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Travel note deleted successfully"
+          },
+          "404": {
+            "description": "Travel note not found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TravelNoteDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "isPublic": {
+            "type": "boolean"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "attractions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AttractionDTO"
+            }
+          }
+        }
+      },
+      "TravelNoteUpdate": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "isPublic": {
+            "type": "boolean"
+          }
+        }
+      },
+      "AttractionDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "image": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "photographer": {
+                "type": "string"
+              },
+              "photographerUrl": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            }
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    }
+  }
+} 

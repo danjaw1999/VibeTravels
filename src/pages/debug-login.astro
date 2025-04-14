@@ -1,0 +1,294 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+export const prerender = false;
+
+let authError = '';
+let authMessage = '';
+let userId = '';
+
+// Only handle server-side form submissions for setting cookies
+if (Astro.request.method === 'POST') {
+  try {
+    const formData = await Astro.request.formData();
+    const email = formData.get('email')?.toString();
+    const password = formData.get('password')?.toString();
+
+    if (!email || !password) {
+      authError = 'Email and password are required';
+    } else {
+      // We'll set the cookies on successful login
+      // Client-side JS will handle localStorage session creation
+      authMessage = 'Form submitted. Check browser console for results.';
+    }
+  } catch (e) {
+    authError = `Error: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+---
+
+<Layout title="Debug Login">
+  <main class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Debug Login</h1>
+    
+    {authError && (
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 mb-4 rounded">
+        <p><strong>Error:</strong> {authError}</p>
+      </div>
+    )}
+
+    {authMessage && (
+      <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 mb-4 rounded">
+        <p><strong>Success:</strong> {authMessage}</p>
+      </div>
+    )}
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div>
+        <h2 class="text-2xl font-semibold mb-4">Direct Browser Login</h2>
+        <p class="mb-4">This method runs entirely in your browser to ensure localStorage works</p>
+        
+        <form id="clientLoginForm" class="max-w-md space-y-4">
+          <div>
+            <label for="clientEmail" class="block mb-1">Email</label>
+            <input type="email" id="clientEmail" name="email" required 
+              class="w-full p-2 border border-gray-300 rounded" />
+          </div>
+          
+          <div>
+            <label for="clientPassword" class="block mb-1">Password</label>
+            <input type="password" id="clientPassword" name="password" required 
+              class="w-full p-2 border border-gray-300 rounded" />
+          </div>
+          
+          <button type="submit" 
+            class="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded">
+            Login in Browser
+          </button>
+        </form>
+        
+        <div id="clientLoginResult" class="mt-4 p-3 hidden"></div>
+      </div>
+      
+      <div>
+        <h2 class="text-2xl font-semibold mb-4">Debug Information</h2>
+        <p class="mb-4">Check your authentication status below</p>
+        
+        <div class="mt-4">
+          <button id="checkSession" class="bg-gray-200 hover:bg-gray-300 py-2 px-4 rounded">
+            Check Session
+          </button>
+          <pre id="sessionInfo" class="mt-2 p-4 bg-gray-100 rounded overflow-auto max-h-96"></pre>
+        </div>
+        
+        <div class="mt-6">
+          <h3 class="text-lg font-medium mb-2">Reset Auth State</h3>
+          <button id="resetAuth" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
+            Clear All Auth Data
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  // Client-side auth logic using the Supabase JS library directly
+  
+  // Initialize form handling
+  const clientLoginForm = document.getElementById('clientLoginForm');
+  const clientLoginResult = document.getElementById('clientLoginResult');
+  const checkSessionButton = document.getElementById('checkSession');
+  const sessionInfoDisplay = document.getElementById('sessionInfo');
+  const resetAuthButton = document.getElementById('resetAuth');
+  
+  clientLoginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    try {
+      const formData = new FormData(e.target);
+      const email = formData.get('email')?.toString();
+      const password = formData.get('password')?.toString();
+      
+      if (!email || !password) {
+        showClientResult('Email and password are required', 'error');
+        return;
+      }
+      
+      // Import Supabase client dynamically
+      const { createClient } = await import('@supabase/supabase-js');
+      
+      // Get config from environment
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+      
+      if (!supabaseUrl || !supabaseAnonKey) {
+        showClientResult('Missing Supabase configuration', 'error');
+        return;
+      }
+      
+      showClientResult('Attempting login...', 'info');
+      
+      // Create a fresh client for each login attempt
+      const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          storageKey: 'sb-auth-token'
+        }
+      });
+      
+      // Perform login
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      // Log everything for debugging
+      console.log('Login attempt result:', { data, error });
+      
+      if (error) {
+        showClientResult(`Error: ${error.message}`, 'error');
+        return;
+      }
+      
+      if (!data.session) {
+        showClientResult('No session returned', 'error');
+        return;
+      }
+      
+      // Now also send to server to set cookies
+      try {
+        const serverResponse = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        
+        if (!serverResponse.ok) {
+          console.warn('Warning: Server-side cookie setup failed');
+        }
+      } catch (serverError) {
+        console.warn('Warning: Server-side cookie setup error', serverError);
+      }
+      
+      // Check localStorage immediately
+      const authKeys = Object.keys(localStorage)
+        .filter(key => key.includes('supabase') || key.includes('sb-'));
+      
+      const hasLocalStorage = authKeys.length > 0;
+      
+      showClientResult(
+        `Login successful! User ID: ${data.user.id}<br>` +
+        `Session in localStorage: ${hasLocalStorage ? 'YES' : 'NO'}<br>` +
+        `${hasLocalStorage ? `Storage keys: ${authKeys.join(', ')}` : ''}`,
+        'success'
+      );
+      
+      // Refresh session info display
+      checkSession();
+    } catch (error) {
+      console.error('Login error:', error);
+      showClientResult(`Error: ${error instanceof Error ? error.message : String(error)}`, 'error');
+    }
+  });
+  
+  // Helper to show results
+  function showClientResult(message, type = 'info') {
+    if (!clientLoginResult) return;
+    
+    clientLoginResult.innerHTML = message;
+    clientLoginResult.classList.remove('hidden', 'bg-green-100', 'bg-red-100', 'bg-blue-100');
+    
+    switch (type) {
+      case 'success':
+        clientLoginResult.classList.add('bg-green-100', 'border', 'border-green-400', 'text-green-700', 'p-3', 'rounded');
+        break;
+      case 'error':
+        clientLoginResult.classList.add('bg-red-100', 'border', 'border-red-400', 'text-red-700', 'p-3', 'rounded');
+        break;
+      default:
+        clientLoginResult.classList.add('bg-blue-100', 'border', 'border-blue-400', 'text-blue-700', 'p-3', 'rounded');
+    }
+  }
+  
+  // Session check function
+  async function checkSession() {
+    if (!sessionInfoDisplay) return;
+    
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+      const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+      
+      const supabase = createClient(supabaseUrl, supabaseAnonKey);
+      
+      // Check session
+      const { data, error } = await supabase.auth.getSession();
+      
+      // Check local storage
+      const storageKeys = Object.keys(localStorage)
+        .filter(key => key.includes('supabase') || key.includes('sb-'))
+        .reduce((obj, key) => {
+          obj[key] = '(value present)';
+          return obj;
+        }, {});
+      
+      // Check cookies
+      const cookies = document.cookie.split(';')
+        .map(cookie => cookie.trim())
+        .filter(cookie => cookie.startsWith('sb-'))
+        .map(cookie => cookie.split('=')[0]);
+      
+      // Display results
+      const info = {
+        session: data.session ? {
+          user: data.session.user.id,
+          expires: data.session.expires_at 
+            ? new Date(data.session.expires_at * 1000).toLocaleString()
+            : 'unknown',
+          hasAccessToken: !!data.session.access_token,
+        } : null,
+        localStorage: Object.keys(storageKeys).length ? storageKeys : 'No Supabase data in localStorage',
+        cookies: cookies.length ? cookies : 'No Supabase cookies found'
+      };
+      
+      sessionInfoDisplay.textContent = JSON.stringify(info, null, 2);
+    } catch (e) {
+      sessionInfoDisplay.textContent = `Error: ${e instanceof Error ? e.message : String(e)}`;
+    }
+  }
+  
+  // Reset auth state
+  resetAuthButton?.addEventListener('click', () => {
+    try {
+      // Clear localStorage
+      Object.keys(localStorage)
+        .filter(key => key.includes('supabase') || key.includes('sb-'))
+        .forEach(key => localStorage.removeItem(key));
+      
+      // Clear cookies (attempt to)
+      document.cookie.split(';')
+        .map(cookie => cookie.trim())
+        .filter(cookie => cookie.startsWith('sb-'))
+        .forEach(cookie => {
+          const name = cookie.split('=')[0];
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/;`;
+        });
+      
+      // Show result
+      showClientResult('Auth data cleared from browser', 'info');
+      
+      // Reload session info
+      checkSession();
+    } catch (e) {
+      console.error('Reset error:', e);
+    }
+  });
+  
+  // Initialize session check on load
+  checkSessionButton?.addEventListener('click', checkSession);
+  document.addEventListener('DOMContentLoaded', checkSession);
+</script> 

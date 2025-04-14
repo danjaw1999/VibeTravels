@@ -1,0 +1,121 @@
+---
+import Layout from '@/layouts/Layout.astro';
+import { AuthService } from '@/lib/services/auth.service';
+import { TravelNoteService } from '@/lib/services/travel-note.service';
+import type { TravelNoteDTO } from '@/types';
+
+const authService = new AuthService();
+const user = await authService.getUser(Astro.locals.supabase);
+
+// Fetch travel notes based on authentication status
+const { data: response, error } = await Astro.locals.supabase
+  .from('travel_notes')
+  .select(`
+    id,
+    name,
+    description,
+    user_id,
+    is_public,
+    created_at,
+    updated_at,
+    attractions (
+      id,
+      name,
+      description,
+      image,
+      latitude,
+      longitude,
+      created_at
+    )
+  `)
+  .eq('is_public', true)
+  .order('created_at', { ascending: false });
+
+if (error) {
+  console.error('Error fetching travel notes:', error);
+}
+
+// Transform the response to match TravelNoteDTO
+const notes: TravelNoteDTO[] = (response || []).map(note => ({
+  id: note.id,
+  user_id: note.user_id,
+  name: note.name,
+  description: note.description,
+  is_public: note.is_public,
+  created_at: note.created_at,
+  updated_at: note.updated_at,
+  attractions: (note.attractions || []).map(attraction => ({
+    id: attraction.id,
+    name: attraction.name,
+    description: attraction.description,
+    image: attraction.image,
+    latitude: attraction.latitude,
+    longitude: attraction.longitude,
+    created_at: attraction.created_at
+  }))
+}));
+---
+
+<Layout title="Travel Notes">
+  <main class="container mx-auto px-4 py-8" role="main">
+    <div class="flex justify-between items-center mb-8">
+      <h1 class="text-3xl font-bold">Travel Notes</h1>
+      {user && (
+        <a 
+          href="/travel-notes/new" 
+          class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+        >
+          Create New Note
+        </a>
+      )}
+      {!user && (
+        <a 
+          href="/login" 
+          class="text-primary hover:underline"
+        >
+          Login to create notes
+        </a>
+      )}
+    </div>
+
+    {error && (
+      <div class="bg-destructive/15 text-destructive p-4 rounded-lg mb-6" role="alert">
+        Failed to load travel notes. Please try again later.
+      </div>
+    )}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {notes.map((note) => (
+        <article class="bg-card rounded-lg shadow-md p-6">
+          <h2 class="text-xl font-semibold mb-2">{note.name}</h2>
+          <p class="text-muted-foreground mb-4 line-clamp-3">
+            {note.description}
+          </p>
+          <div class="flex justify-between items-center text-sm text-muted-foreground">
+            <time datetime={note.created_at}>
+              {new Date(note.created_at).toLocaleDateString()}
+            </time>
+            <a 
+              href={`/travel-notes/${note.id}`}
+              class="text-primary hover:underline"
+            >
+              Read more
+            </a>
+          </div>
+        </article>
+      ))}
+    </div>
+
+    {notes.length === 0 && !error && (
+      <div class="text-center py-12" role="status">
+        <h2 class="text-xl font-semibold mb-2">No travel notes yet</h2>
+        <p class="text-muted-foreground">
+          {user 
+            ? "Start sharing your travel experiences by creating your first note!"
+            : "Login to start sharing your travel experiences!"
+          }
+        </p>
+      </div>
+    )}
+  </main>
+</Layout> 

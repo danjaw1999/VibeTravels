@@ -1,15 +1,30 @@
-import { defineConfig } from 'astro/config';
+// @ts-check
+import { defineConfig } from "astro/config";
 
-import react from '@astrojs/react';
-
-import tailwind from '@astrojs/tailwind';
+import react from "@astrojs/react";
+import sitemap from "@astrojs/sitemap";
+import tailwindcss from "@tailwindcss/vite";
+import node from "@astrojs/node";
 
 // https://astro.build/config
 export default defineConfig({
-  integrations: [
-    react(),
-    tailwind({
-      applyBaseStyles: false,
-    }),
-  ],
+  output: "server",
+  integrations: [react(), sitemap()],
+  server: { port: 3000 },
+  vite: {
+    plugins: [tailwindcss()],
+    resolve: {
+      alias: {
+        '@': '/src',
+        '@components': '/src/components',
+        '@layouts': '/src/layouts',
+        '@lib': '/src/lib',
+        '@assets': '/src/assets',
+        '@db': '/src/db'
+      }
+    }
+  },
+  adapter: node({
+    mode: "standalone",
+  }),
 });

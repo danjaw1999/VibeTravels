@@ -1,11 +1,10 @@
 ---
-import '@/styles/globals.css'
-import Layout from '../layouts/Layout.astro';
-import { TravelForm } from '@/components/TravelForm';
+import Welcome from "../components/Welcome.astro";
+import Layout from "../layouts/Layout.astro";
+import { TokenLogger } from "../components/TokenLogger";
 ---
 
-<Layout title="VibeTravels - AI Travel Planner">
-  <main>
-    <TravelForm client:load />
-  </main>
+<Layout>
+  <Welcome />
+  <TokenLogger client:load />
 </Layout>
