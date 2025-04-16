@@ -1,24 +1,41 @@
+import type { APIRoute } from 'astro';
+import { createSupabaseAdminInstance } from '@/db/supabase';
 
-import type { APIRoute } from "astro";
-import { supabase } from "@/db/supabase.client";
+export const POST: APIRoute = async ({ request, cookies, redirect }) => {
 
-export const POST: APIRoute = async ({ request, redirect }) => {
-  const formData = await request.formData();
-  const email = formData.get("email")?.toString();
-  const password = formData.get("password")?.toString();
+  try {
+    const { email, password } = await request.json();
 
-  if (!email || !password) {
-    return new Response("Email and password are required", { status: 400 });
+    if (!email || !password) {
+      return new Response(
+        JSON.stringify({ error: 'Email, password are required' }),
+        { status: 400 },
+      );
+    }
+
+    const supabase = createSupabaseAdminInstance({ cookies, headers: request.headers });
+
+    const { data: authData, error: authError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${new URL(request.url).origin}/login`,
+      },
+    });
+
+    if (authError) {
+      return new Response(JSON.stringify({ error: authError.message }), { status: 400 });
+    }
+
+    await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    
+
+    return new Response(JSON.stringify({ user: authData.user }), { status: 200 });
+  } catch (err) {
+    console.error('Signup error:', err);
+    return new Response(JSON.stringify({ error: 'An unexpected error occurred' }), { status: 500 });
   }
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-  });
-
-  if (error) {
-    return new Response(error.message, { status: 500 });
-  }
-
-  return redirect("/login");
 };

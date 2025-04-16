@@ -1,32 +1,120 @@
 ---
 import Layout from '@/layouts/Layout.astro';
 import TravelNoteForm from '@/components/TravelNoteForm';
-import { ViewTransitions } from 'astro:transitions';
+import { createSupabaseServerInstance } from '@/db/supabase';
+
+
+const supabase = createSupabaseServerInstance({
+  cookies: Astro.cookies,
+  headers: Astro.request.headers,
+});
+
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
+if (!user) {
+  return Astro.redirect("/login");
+}
 ---
 
 <Layout title="Create New Travel Note">
-  <ViewTransitions />
   
-  <main class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold mb-8">Create New Travel Note</h1>
-    
-    <div class="max-w-2xl mx-auto">
-      <TravelNoteForm client:load onSubmit={async (data) => {
-        const response = await fetch("/api/travel-notes", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        });
+  <main 
+    class="container mx-auto px-4 py-8 min-h-screen"
+    transition:animate="slide"
+  >
+    <div class="max-w-3xl mx-auto">
+      <div class="space-y-6 animate-fade-in">
+        <div class="flex items-center gap-4 mb-8">
+          <a 
+            href="/travel-notes" 
+            class="text-muted-foreground hover:text-foreground transition-colors inline-flex items-center gap-2 group"
+          >
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              class="h-4 w-4 transform group-hover:-translate-x-1 transition-transform" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              stroke="currentColor"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Notes
+          </a>
+        </div>
 
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.message || "Failed to create travel note");
-        }
+        <div class="relative">
+          <div class="absolute inset-0 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg -z-10 blur-xl animate-pulse"></div>
+          <h1 class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+            Create New Travel Note
+          </h1>
+        </div>
 
-        window.location.href = "/travel-notes";
-      }} />
+        <p class="text-lg text-muted-foreground">
+          Share your travel experiences with the community. Add details, photos, and make your story come alive.
+        </p>
+
+        <div class="bg-card rounded-lg shadow-lg p-6 space-y-6">
+          <TravelNoteForm 
+            client:load 
+            onSubmit={async (data) => {
+              try {
+                const response = await fetch("/api/travel-notes", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(data),
+                  credentials: 'include'
+                });
+
+                if (!response.ok) {
+                  const error = await response.json();
+                  throw new Error(error.message || "Failed to create travel note");
+                }
+
+                const result = await response.json();
+                window.location.href = `/travel-notes/${result.id}`;
+              } catch (error) {
+                console.error("Error creating travel note:", error);
+                throw error;
+              }
+            }} 
+          />
+        </div>
+      </div>
     </div>
   </main>
-</Layout> 
+</Layout>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+  }
+
+  .animate-pulse {
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  /* Stagger children animations */
+  .animate-fade-in > * {
+    opacity: 0;
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in > *:nth-child(1) { animation-delay: 0.1s; }
+  .animate-fade-in > *:nth-child(2) { animation-delay: 0.2s; }
+  .animate-fade-in > *:nth-child(3) { animation-delay: 0.3s; }
+  .animate-fade-in > *:nth-child(4) { animation-delay: 0.4s; }
+</style> 

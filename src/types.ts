@@ -1,4 +1,4 @@
-import type { Database, SupabaseClient } from './db/supabase.client';
+import type { Database, SupabaseClient } from './db/supabase';
 import type { User } from '@supabase/supabase-js';
 
 type DBTables = Database['public']['Tables'];

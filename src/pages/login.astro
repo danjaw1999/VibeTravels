@@ -1,30 +1,45 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import LoginForm from "../components/LoginForm";
+import Layout from '../layouts/Layout.astro';
+import { createSupabaseServerInstance } from '@/db/supabase';
+import LoginForm from '@/components/LoginForm';
 
-// Check if user is already logged in
-const { cookies, redirect } = Astro;
-const accessToken = cookies.get("sb-access-token");
-const refreshToken = cookies.get("sb-refresh-token");
+// Create server-side Supabase client
+const supabase = createSupabaseServerInstance({
+  cookies: Astro.cookies,
+  headers: Astro.request.headers,
+});
 
-if (accessToken && refreshToken) {
-  return redirect("/");
+// Check if user is already authenticated
+const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser();
+
+// Redirect authenticated users
+if (user && !authError) {
+  return Astro.redirect('/', 302);
 }
+
+// Set page metadata
+const title = "Logowanie | VibeTravels";
 ---
 
-<Layout title="Zaloguj się - VibeTravels">
-  <div class="container max-w-md mx-auto py-10">
-    <div class="space-y-6">
-      <div class="space-y-2 text-center">
-        <h1 class="text-3xl font-bold">Zaloguj się</h1>
-        <p class="text-muted-foreground">Wprowadź swoje dane, aby się zalogować</p>
+<Layout title={title}>
+  <main 
+    class="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center"
+    transition:animate="slide"
+  >
+    <div class="w-full max-w-md space-y-8">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+          Witaj ponownie
+        </h1>
+        <p class="text-muted-foreground">
+          Zaloguj się do swojego konta
+        </p>
       </div>
-      
-      <LoginForm client:load redirectTo="/welcome" />
-      
-      <div class="text-center text-sm">
-        <p>Nie masz jeszcze konta? <a href="/register" class="text-primary hover:underline">Zarejestruj się</a></p>
-      </div>
+
+      <LoginForm client:load redirectTo="/" />
     </div>
-  </div>
-</Layout> 
+  </main>
+</Layout>

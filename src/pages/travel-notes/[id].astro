@@ -1,17 +1,24 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { AuthService } from '@/lib/services/auth.service';
 import { TravelNoteService } from '@/lib/services/travel-note.service';
 import { AttractionSuggestions } from '@/components/AttractionSuggestions';
+import { Skeleton } from '@/components/ui/skeleton';
 import type { TravelNoteDTO } from '@/types';
+import { createSupabaseServerInstance } from '@/db/supabase';
 
 const { id } = Astro.params;
 if (!id) {
   return Astro.redirect('/404');
 }
+const supabase = createSupabaseServerInstance({
+  cookies: Astro.cookies,
+  headers: Astro.request.headers,
+});
 
-const authService = new AuthService();
-const user = await authService.getUser(Astro.locals.supabase);
+const {
+  data: { user },
+} = await supabase.auth.getUser();
+
 const service = new TravelNoteService(Astro.locals.supabase);
 
 let travelNote: TravelNoteDTO;
@@ -47,71 +54,113 @@ const serializedTravelNote = JSON.stringify(travelNote);
 ---
 
 <Layout title={travelNote.name}>
-  <main class="container mx-auto px-4 py-8" role="main">
-    <nav class="mb-8" role="navigation" aria-label="Breadcrumb">
+  <main 
+    class="container mx-auto px-4 py-8 min-h-screen" 
+    transition:animate="slide"
+  >
+    {/* Breadcrumb with transition */}
+    <nav class="mb-8 animate-fade-in" role="navigation" aria-label="Breadcrumb">
       <ol class="flex items-center space-x-2 text-sm">
         <li>
-          <a href="/travel-notes" class="text-primary hover:underline">Travel Notes</a>
+          <a href="/travel-notes" class="text-primary hover:underline transition-colors">
+            Travel Notes
+          </a>
         </li>
         <li class="text-muted-foreground">/</li>
         <li class="text-muted-foreground truncate">{travelNote.name}</li>
       </ol>
     </nav>
 
-    <article class="prose prose-lg dark:prose-invert max-w-none">
+    <article class="prose prose-lg dark:prose-invert max-w-none animate-fade-in">
       <header class="mb-8">
-        <h1 class="text-4xl font-bold mb-4">{travelNote.name}</h1>
+        <h1 class="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60">
+          {travelNote.name}
+        </h1>
         <div class="flex items-center gap-4 text-sm text-muted-foreground">
-          <time datetime={travelNote.created_at}>{formattedDate}</time>
+          <time datetime={travelNote.created_at} class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            {formattedDate}
+          </time>
           {travelNote.is_public ? (
-            <span class="bg-primary/10 text-primary px-2 py-1 rounded-full">Public</span>
+            <span class="bg-primary/10 text-primary px-3 py-1 rounded-full flex items-center gap-2 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              Public
+            </span>
           ) : (
-            <span class="bg-muted text-muted-foreground px-2 py-1 rounded-full">Private</span>
+            <span class="bg-muted text-muted-foreground px-3 py-1 rounded-full flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                <path d="M7 11V7a5 5 0 0110 0v4" />
+              </svg>
+              Private
+            </span>
           )}
         </div>
       </header>
 
-      <div class="mb-12 whitespace-pre-wrap">{travelNote.description}</div>
+      <div class="mb-12 whitespace-pre-wrap leading-relaxed">{travelNote.description}</div>
 
       {travelNote.attractions.length > 0 ? (
-        <section aria-labelledby="attractions-heading">
-          <h2 id="attractions-heading" class="text-2xl font-semibold mb-6">Attractions</h2>
+        <section aria-labelledby="attractions-heading" class="animate-fade-in">
+          <h2 id="attractions-heading" class="text-2xl font-semibold mb-6 flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Attractions
+          </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             {travelNote.attractions.map((attraction) => (
-              <div class="bg-card rounded-lg shadow-md p-6">
-                <h3 class="text-xl font-semibold mb-2">{attraction.name}</h3>
-                {attraction.image && (
-                  <div class="relative aspect-video mb-4 rounded-lg overflow-hidden">
+              <div class="bg-card rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                {attraction.image ? (
+                  <div class="relative aspect-video overflow-hidden">
                     <img 
                       src={attraction.image.url} 
                       alt={`Photo of ${attraction.name}`}
-                      class="object-cover w-full h-full"
+                      class="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
                     />
-                    <div class="absolute bottom-0 right-0 bg-black/50 text-white text-xs p-2">
+                    <div class="absolute bottom-0 right-0 bg-black/50 backdrop-blur-sm text-white text-xs p-2">
                       Photo by{' '}
                       <a 
                         href={attraction.image.photographerUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="hover:underline"
+                        class="hover:underline text-primary-foreground"
                       >
                         {attraction.image.photographer}
                       </a>
                     </div>
                   </div>
+                ) : (
+                  <div class="aspect-video bg-muted flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                      <circle cx="8.5" cy="8.5" r="1.5" />
+                      <polyline points="21 15 16 10 5 21" />
+                    </svg>
+                  </div>
                 )}
-                {attraction.description && (
-                  <p class="text-muted-foreground mb-4">{attraction.description}</p>
-                )}
-                <div class="flex items-center gap-2 text-sm text-muted-foreground">
+                <div class="p-6">
+                  <h3 class="text-xl font-semibold mb-2 text-foreground">{attraction.name}</h3>
+                  {attraction.description && (
+                    <p class="text-muted-foreground mb-4 line-clamp-3">{attraction.description}</p>
+                  )}
                   <a
                     href={`https://www.google.com/maps?q=${attraction.latitude},${attraction.longitude}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="hover:underline flex items-center gap-1"
+                    class="inline-flex items-center gap-2 text-sm text-primary hover:text-primary/80 transition-colors group"
                   >
-                    <span>View on map</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <span>View on Google Maps</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                     </svg>
                   </a>
@@ -121,8 +170,13 @@ const serializedTravelNote = JSON.stringify(travelNote);
           </div>
         </section>
       ) : isOwner && (
-        <section aria-labelledby="suggestions-heading" class="mb-12">
-          <h2 id="suggestions-heading" class="text-2xl font-semibold mb-6">Suggested Attractions</h2>
+        <section aria-labelledby="suggestions-heading" class="mb-12 animate-fade-in">
+          <h2 id="suggestions-heading" class="text-2xl font-semibold mb-6 flex items-center gap-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            Suggested Attractions
+          </h2>
           <AttractionSuggestions 
             client:idle 
             travelNote={travelNote}
@@ -130,23 +184,52 @@ const serializedTravelNote = JSON.stringify(travelNote);
         </section>
       )}
 
-      {isOwner && (
-        <div class="mt-8 flex gap-4">
+      <!-- {isOwner && (
+        <div class="mt-8 flex gap-4 animate-fade-in">
           <a 
             href={`/travel-notes/${travelNote.id}/edit`}
-            class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
+            class="bg-primary text-primary-foreground px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors inline-flex items-center gap-2 shadow-lg hover:shadow-xl"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
             Edit Note
           </a>
           <button 
             type="button"
-            class="bg-destructive text-destructive-foreground px-4 py-2 rounded-lg hover:bg-destructive/90 transition-colors"
+            class="bg-destructive text-destructive-foreground px-6 py-2 rounded-lg hover:bg-destructive/90 transition-colors inline-flex items-center gap-2 shadow-lg hover:shadow-xl"
             onclick="if(confirm('Are you sure you want to delete this note?')) location.href=`/api/travel-notes/${travelNote.id}/delete`"
           >
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
             Delete Note
           </button>
         </div>
-      )}
+      )} -->
     </article>
   </main>
-</Layout> 
+</Layout>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  /* Stagger children animations */
+  .animate-fade-in > * {
+    opacity: 0;
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in > *:nth-child(1) { animation-delay: 0.1s; }
+  .animate-fade-in > *:nth-child(2) { animation-delay: 0.2s; }
+  .animate-fade-in > *:nth-child(3) { animation-delay: 0.3s; }
+  .animate-fade-in > *:nth-child(4) { animation-delay: 0.4s; }
+  .animate-fade-in > *:nth-child(5) { animation-delay: 0.5s; }
+</style> 

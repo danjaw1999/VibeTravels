@@ -1,87 +1,31 @@
+import { createSupabaseServerInstance } from '@/db/supabase';
 import type { APIRoute } from 'astro';
-import { AuthService } from '@/lib/services/auth.service';
-import { supabase } from '@/db/supabase.client';
 
-export const POST = (async ({ request, cookies }) => {
+export const POST: APIRoute = async ({ request, cookies }) => {
+
   try {
-    const body = await request.json();
-    const { email, password } = body;
+    const { email, password } = await request.json();
 
     if (!email || !password) {
-      return new Response(
-        JSON.stringify({
-          error: 'Email and password are required'
-        }),
-        {
-          status: 400,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-    }
-
-    // Use the auth service with supabase client
-    const authService = new AuthService(supabase);
-    const result = await authService.serverLogin({ email, password });
-
-    if (!result.user) {
-      return new Response(
-        JSON.stringify({
-          error: 'Invalid credentials'
-        }),
-        {
-          status: 401,
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-    }
-
-    // Set cookies for server-side authentication
-    if (result.accessToken) {
-      cookies.set('sb-access-token', result.accessToken, {
-        path: '/',
-        maxAge: 60 * 60 * 24, // 1 day
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
-      });
-    }
-    
-    if (result.refreshToken) {
-      cookies.set('sb-refresh-token', result.refreshToken, {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 7, // 7 days
-        httpOnly: true,
-        secure: true,
-        sameSite: 'lax',
+      return new Response(JSON.stringify({ error: 'Email and password are required' }), {
+        status: 400,
       });
     }
 
-    return new Response(
-      JSON.stringify(result.user),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-  } catch (error) {
-    console.error('Login error:', error);
+    const supabase = createSupabaseServerInstance({ cookies, headers: request.headers });
 
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : 'Failed to login'
-      }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }
-    );
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), { status: 400 });
+    }
+
+    return new Response(JSON.stringify({ user: data.user }), { status: 200 });
+  } catch (err) {
+    console.error('Login error:', err);
+    return new Response(JSON.stringify({ error: 'An unexpected error occurred' }), { status: 500 });
   }
-}) satisfies APIRoute; 
+};

@@ -1,30 +1,28 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { RegisterForm } from "../components/RegisterForm";
+import { createSupabaseServerInstance } from "@/db/supabase";
 
-// Check if user is already logged in
-const { cookies, redirect } = Astro;
-const accessToken = cookies.get("sb-access-token");
-const refreshToken = cookies.get("sb-refresh-token");
+const supabase = createSupabaseServerInstance({
+  cookies: Astro.cookies,
+  headers: Astro.request.headers,
+});
 
-if (accessToken && refreshToken) {
-  return redirect("/");
+// Check if user is already authenticated
+const {
+  data: { user },
+  error: authError,
+} = await supabase.auth.getUser();
+
+// Redirect authenticated users
+if (user && !authError) {
+  return Astro.redirect('/', 302);
 }
+
 ---
 
 <Layout title="Zarejestruj się - VibeTravels">
   <div class="container max-w-md mx-auto py-10">
-    <div class="space-y-6">
-      <div class="space-y-2 text-center">
-        <h1 class="text-3xl font-bold">Zarejestruj się</h1>
-        <p class="text-muted-foreground">Utwórz konto, aby rozpocząć korzystanie z serwisu</p>
-      </div>
-      
       <RegisterForm client:load />
-      
-      <div class="text-center text-sm">
-        <p>Masz już konto? <a href="/login" class="text-primary hover:underline">Zaloguj się</a></p>
-      </div>
-    </div>
   </div>
 </Layout>

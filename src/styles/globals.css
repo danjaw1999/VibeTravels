@@ -1,0 +1,144 @@
+@import "tailwindcss/preflight";
+@import './animations.css';
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Animations */
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+  }
+
+  /* Animation Classes */
+  .animate-shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-slide {
+    animation: slideIn 0.3s ease-out forwards;
+  }
+
+  .animate-pulse {
+    animation: pulse 3s ease-in-out infinite;
+  }
+
+  /* Form Elements */
+  .form-input-focus {
+    @apply transition-all duration-300 focus:scale-[1.01] focus:outline-none focus:ring-2 focus:ring-primary/20;
+  }
+
+  .form-label {
+    @apply text-lg font-medium inline-flex items-center gap-2 cursor-pointer;
+  }
+
+  .form-icon {
+    @apply h-4 w-4 text-muted-foreground shrink-0;
+  }
+
+  .form-group {
+    @apply space-y-2 transition-all duration-300 gap-2;
+  }
+
+  .form-group-focus {
+    @apply -translate-y-1;
+  }
+
+  /* Checkbox Styles */
+  .checkbox-wrapper {
+    @apply flex items-center gap-2 p-1 rounded-lg hover:bg-accent/50 transition-colors;
+  }
+
+  .checkbox-input {
+    @apply h-5 w-5 border-2 border-primary rounded-sm cursor-pointer;
+  }
+
+  .checkbox-input[data-state="checked"] {
+    @apply scale-105 bg-primary border-primary text-primary-foreground;
+  }
+
+  /* Button Styles */
+  .button-primary {
+    @apply w-full text-lg h-12 transition-all duration-300 hover:scale-[1.02];
+  }
+
+  /* Error Message */
+  .error-message {
+    @apply bg-destructive/15 text-destructive px-4 py-3 rounded-lg flex items-center gap-2;
+  }
+} 

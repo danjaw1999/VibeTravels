@@ -1,105 +1,89 @@
 ---
 import Layout from '@/layouts/Layout.astro';
-import { AuthService } from '@/lib/services/auth.service';
-import { TravelNoteService } from '@/lib/services/travel-note.service';
 import type { TravelNoteDTO } from '@/types';
+import { CreateNoteButton } from '@/components/CreateNoteButton';
+import LoginButton from '@/components/LoginButton';
+import { TravelNoteService } from '@/lib/services/travel-note.service';
 
-const authService = new AuthService();
-const user = await authService.getUser(Astro.locals.supabase);
+// Inicjalizacja serwisu
+const travelNoteService = new TravelNoteService(Astro.locals.supabase);
 
-// Fetch travel notes based on authentication status
-const { data: response, error } = await Astro.locals.supabase
-  .from('travel_notes')
-  .select(`
-    id,
-    name,
-    description,
-    user_id,
-    is_public,
-    created_at,
-    updated_at,
-    attractions (
-      id,
-      name,
-      description,
-      image,
-      latitude,
-      longitude,
-      created_at
-    )
-  `)
-  .eq('is_public', true)
-  .order('created_at', { ascending: false });
+let notes: TravelNoteDTO[] = [];
+let error: Error | null = null;
 
-if (error) {
-  console.error('Error fetching travel notes:', error);
+try {
+  // Pobieramy notatki używając serwisu
+  const { data } = await travelNoteService.listTravelNotes({
+    page: 1,
+    limit: 50,
+    sortOrder: 'desc',
+    sortBy: 'created_at'
+  });
+  notes = data;
+} catch (e) {
+  console.error('Error fetching travel notes:', e);
+  error = e as Error;
 }
 
-// Transform the response to match TravelNoteDTO
-const notes: TravelNoteDTO[] = (response || []).map(note => ({
-  id: note.id,
-  user_id: note.user_id,
-  name: note.name,
-  description: note.description,
-  is_public: note.is_public,
-  created_at: note.created_at,
-  updated_at: note.updated_at,
-  attractions: (note.attractions || []).map(attraction => ({
-    id: attraction.id,
-    name: attraction.name,
-    description: attraction.description,
-    image: attraction.image,
-    latitude: attraction.latitude,
-    longitude: attraction.longitude,
-    created_at: attraction.created_at
-  }))
-}));
+// Pobierz informacje o użytkowniku
+const {
+  data: { user },
+} = await Astro.locals.supabase.auth.getUser();
 ---
 
 <Layout title="Travel Notes">
-  <main class="container mx-auto px-4 py-8" role="main">
-    <div class="flex justify-between items-center mb-8">
-      <h1 class="text-3xl font-bold">Travel Notes</h1>
-      {user && (
-        <a 
-          href="/travel-notes/new" 
-          class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          Create New Note
-        </a>
-      )}
-      {!user && (
-        <a 
-          href="/login" 
-          class="text-primary hover:underline"
-        >
-          Login to create notes
-        </a>
-      )}
+  <main 
+    class="container mx-auto px-4 py-8" 
+    role="main"
+    transition:animate="slide"
+  >
+    <div class="flex justify-between items-center mb-8 animate-fade-in">
+      <h1 class="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60 cursor-pointer" onclick="window.location.href='/'">
+        Travel Notes
+      </h1>
+      <div class="flex items-center gap-4">
+        <CreateNoteButton client:load isLoggedIn={!!user} />
+      </div>
     </div>
 
     {error && (
-      <div class="bg-destructive/15 text-destructive p-4 rounded-lg mb-6" role="alert">
-        Failed to load travel notes. Please try again later.
+      <div class="bg-destructive/15 text-destructive px-4 py-3 rounded-lg mb-6 animate-fade-in" role="alert">
+        <div class="flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12" y2="16" />
+          </svg>
+          Failed to load travel notes. Please try again later.
+        </div>
       </div>
     )}
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in">
       {notes.map((note) => (
-        <article class="bg-card rounded-lg shadow-md p-6">
-          <h2 class="text-xl font-semibold mb-2">{note.name}</h2>
+        <article class="bg-card rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 p-6 group">
+          <h2 class="text-xl font-semibold mb-2 text-foreground">{note.name}</h2>
           <p class="text-muted-foreground mb-4 line-clamp-3">
             {note.description}
           </p>
-          <div class="flex justify-between items-center text-sm text-muted-foreground">
-            <time datetime={note.created_at}>
+          <div class="flex justify-between items-center text-sm">
+            <time datetime={note.created_at} class="text-muted-foreground flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+              </svg>
               {new Date(note.created_at).toLocaleDateString()}
             </time>
             <a 
               href={`/travel-notes/${note.id}`}
-              class="text-primary hover:underline"
+              class="text-primary hover:text-primary/80 inline-flex items-center gap-2 group"
             >
-              Read more
+              <span>Read more</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
             </a>
           </div>
         </article>
@@ -107,7 +91,10 @@ const notes: TravelNoteDTO[] = (response || []).map(note => ({
     </div>
 
     {notes.length === 0 && !error && (
-      <div class="text-center py-12" role="status">
+      <div class="text-center py-12 animate-fade-in" role="status">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto mb-4 text-muted-foreground/50" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
         <h2 class="text-xl font-semibold mb-2">No travel notes yet</h2>
         <p class="text-muted-foreground">
           {user 
@@ -115,7 +102,35 @@ const notes: TravelNoteDTO[] = (response || []).map(note => ({
             : "Login to start sharing your travel experiences!"
           }
         </p>
+        {!user && (
+          <div class="mt-6">
+            <LoginButton client:load />
+          </div>
+        )}
       </div>
     )}
   </main>
-</Layout> 
+</Layout>
+
+<style>
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  /* Stagger children animations */
+  .animate-fade-in > * {
+    opacity: 0;
+    animation: fade-in 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in > *:nth-child(1) { animation-delay: 0.1s; }
+  .animate-fade-in > *:nth-child(2) { animation-delay: 0.2s; }
+  .animate-fade-in > *:nth-child(3) { animation-delay: 0.3s; }
+  .animate-fade-in > *:nth-child(4) { animation-delay: 0.4s; }
+  .animate-fade-in > *:nth-child(5) { animation-delay: 0.5s; }
+</style> 

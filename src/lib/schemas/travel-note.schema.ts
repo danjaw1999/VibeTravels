@@ -10,7 +10,7 @@ export const createTravelNoteSchema = z.object({
     .string()
     .min(1, 'Description is required')
     .trim(),
-  isPublic: z
+  is_public: z
     .boolean()
     .optional()
     .default(true)

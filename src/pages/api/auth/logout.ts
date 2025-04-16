@@ -1,21 +1,22 @@
 import type { APIRoute } from 'astro';
-import { AuthService } from '@/lib/services/auth.service';
-import { supabase } from '@/db/supabase.client';
 
-export const POST = (async ({ cookies, redirect }) => {
+export const POST: APIRoute = async ({ locals }) => {
   try {
-    // Clear cookies
-    cookies.delete('sb-access-token', { path: '/' });
-    cookies.delete('sb-refresh-token', { path: '/' });
-    
-    // Log out from Supabase (which clears localStorage)
-    const authService = new AuthService(supabase);
-    await authService.logout();
-    
-    // Redirect to home or login page
-    return redirect('/');
-  } catch (error) {
-    console.error('Logout error:', error);
-    return new Response('Logout failed', { status: 500 });
+    const { error } = await locals.supabase.auth.signOut();
+
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), {
+        status: 400,
+      });
+    }
+
+    return new Response(JSON.stringify({ success: true }), {
+      status: 200,
+    });
+  } catch (err) {
+    console.error('Logout error:', err);
+    return new Response(JSON.stringify({ error: 'An unexpected error occurred' }), {
+      status: 500,
+    });
   }
-}) satisfies APIRoute; 
+};

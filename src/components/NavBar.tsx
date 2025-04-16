@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/db/supabase.client";
+import { supabase } from "@/db/supabase";
 import { Button } from "@/components/ui/button";
 import { LogIn, Menu, X, Home, MapIcon, PlusCircle, User } from "lucide-react";
-import LogoutButton from "./LogoutButton";
+import LogoutButton from "./LoginButton";
 import { Link } from "@/components/ui/link";
 
 export default function NavBar() {

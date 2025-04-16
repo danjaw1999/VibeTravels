@@ -4,14 +4,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { CreateTravelNoteCommand } from "@/types";
-import { useCreateTravelNote } from "@/hooks/useCreateTravelNote";
+import { useState } from "react";
 import { navigate } from "astro:transitions/client";
 
 export default function TravelNoteForm() {
-	const { createNote, isSubmitting, error } = useCreateTravelNote();
+	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [error, setError] = useState<string | null>(null);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
+		setIsSubmitting(true);
+		setError(null);
 
 		try {
 			const formData = new FormData(e.currentTarget);
@@ -21,12 +24,35 @@ export default function TravelNoteForm() {
 				is_public: formData.get("is_public") === "on",
 			};
 
-			const note = await createNote(noteData);
-			// if (note) {
-			// 	navigate(`/travel-notes/${note.id}`);
-			// }
+			const response = await fetch("/api/travel-notes", {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify(noteData),
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				if (response.status === 401) {
+					// Unauthorized - redirect to login
+					window.location.href = "/auth/login";
+					return;
+				}
+				throw new Error(errorData.message || "Failed to create travel note");
+			}
+
+			const { data: note } = await response.json();
+			if (note?.id) {
+				navigate(`/travel-notes/${note.id}`);
+			}
 		} catch (err) {
 			console.error("Form submission failed:", err);
+			setError(
+				err instanceof Error ? err.message : "Failed to create travel note",
+			);
+		} finally {
+			setIsSubmitting(false);
 		}
 	};
 
@@ -58,9 +84,11 @@ export default function TravelNoteForm() {
 				<Label htmlFor="is_public">Make this note public</Label>
 			</div>
 
-			{error && <div className="text-red-500">{error}</div>}
+			{error && (
+				<div className="text-sm font-medium text-destructive">{error}</div>
+			)}
 
-			<Button type="submit" disabled={isSubmitting}>
+			<Button type="submit" disabled={isSubmitting} className="w-full">
 				{isSubmitting ? "Creating..." : "Create Travel Note"}
 			</Button>
 		</form>

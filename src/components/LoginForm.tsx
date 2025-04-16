@@ -1,10 +1,3 @@
-import { useState } from "react";
-import { useLogin } from "@/hooks/useLogin";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Mail, Lock, LogIn } from "lucide-react";
 import {
 	Card,
 	CardContent,
@@ -13,111 +6,108 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
+import { useAuth } from "@/hooks/useAuth";
+import { loginSchema } from "@/lib/types/auth";
+import type { LoginFormData } from "@/lib/types/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import AuthInput from "./AuthInput";
 
 interface LoginFormProps {
 	redirectTo: string;
 }
 
 export default function LoginForm({ redirectTo }: LoginFormProps) {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [formError, setFormError] = useState<string | null>(null);
-	const { login, isLoading, error } = useLogin();
+	const { login, error: apiError, isLoading } = useAuth();
 
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!email || !password) {
-			setFormError("Email i hasło są wymagane");
-			return;
+	const {
+		register,
+		handleSubmit,
+		formState: { errors },
+	} = useForm<LoginFormData>({
+		resolver: zodResolver(loginSchema),
+	});
+
+	const onSubmit = async (data: LoginFormData) => {
+		try {
+			await login(data);
+
+			window.location.href = redirectTo;
+		} catch (error) {
+			console.error(error);
 		}
-		setFormError(null);
-		await login({ email, password }, redirectTo);
 	};
 
 	return (
-		<Card className="w-full max-w-md shadow-lg">
+		<Card className="w-full max-w-md">
 			<CardHeader className="space-y-1">
-				<CardTitle className="text-2xl font-bold text-center">
-					Logowanie
-				</CardTitle>
+				<CardTitle className="text-2xl text-center">Witaj ponownie</CardTitle>
 				<CardDescription className="text-center">
-					Wprowadź swoje dane, aby się zalogować
+					Zaloguj się do swojego konta
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<form onSubmit={handleSubmit} className="space-y-6">
-					{(error || formError) && (
-						<Alert variant="destructive" className="mb-4">
-							<AlertDescription>{error || formError}</AlertDescription>
-						</Alert>
+				<form
+					onSubmit={handleSubmit(onSubmit)}
+					className="space-y-4"
+					method="POST"
+					action="javascript:void(0);"
+				>
+					{apiError && (
+						<div className="p-3 text-sm font-medium text-destructive-foreground bg-destructive/10 rounded-md">
+							{apiError}
+						</div>
 					)}
 
-					<div className="space-y-2">
-						<Label htmlFor="email">Email</Label>
-						<div className="relative">
-							<Mail className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-							<Input
-								id="email"
-								type="email"
-								value={email}
-								onChange={(e) => setEmail(e.target.value)}
-								required
-								placeholder="twoj@email.com"
-								disabled={isLoading}
-								className="pl-8"
-							/>
-						</div>
+					<AuthInput
+						id="email"
+						label="Email"
+						type="email"
+						error={errors.email?.message}
+						autoComplete="email"
+						disabled={isLoading}
+						placeholder="jankowalski@example.com"
+						{...register("email")}
+					/>
+
+					<AuthInput
+						id="password"
+						label="Hasło"
+						type="password"
+						error={errors.password?.message}
+						autoComplete="current-password"
+						disabled={isLoading}
+						placeholder="••••••••"
+						{...register("password")}
+					/>
+
+					<div className="flex items-center justify-end">
+						<a
+							href="/auth/reset-password"
+							className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
+						>
+							Nie pamiętasz hasła?
+						</a>
 					</div>
 
-					<div className="space-y-2">
-						<Label htmlFor="password">Hasło</Label>
-						<div className="relative">
-							<Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-							<Input
-								id="password"
-								type="password"
-								value={password}
-								onChange={(e) => setPassword(e.target.value)}
-								required
-								placeholder="••••••••"
-								disabled={isLoading}
-								className="pl-8"
-							/>
-						</div>
-					</div>
-
-					<Button type="submit" className="w-full" disabled={isLoading}>
-						{isLoading ? (
-							<>
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								Logowanie...
-							</>
-						) : (
-							<>
-								<LogIn className="mr-2 h-4 w-4" />
-								Zaloguj się
-							</>
-						)}
-					</Button>
+					<button
+						type="submit"
+						disabled={isLoading}
+						className="w-full px-4 py-2 text-sm font-medium text-white bg-black hover:bg-black/90 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+					>
+						{isLoading ? "Logowanie..." : "Zaloguj się"}
+					</button>
 				</form>
 			</CardContent>
 			<CardFooter className="flex justify-center">
-				<p className="px-8 text-center text-sm text-muted-foreground">
-					Klikając "Zaloguj się", akceptujesz nasze
+				<p className="text-sm text-muted-foreground">
+					Nie masz jeszcze konta?{" "}
 					<a
-						href="/terms"
-						className="underline underline-offset-4 hover:text-primary ml-1"
+						href="/register"
+						className="font-medium text-primary hover:text-primary/90 transition-colors"
 					>
-						Warunki korzystania
+						Zarejestruj się
 					</a>
-					<span className="mx-1">i</span>
-					<a
-						href="/privacy"
-						className="underline underline-offset-4 hover:text-primary"
-					>
-						Politykę prywatności
-					</a>
-					.
 				</p>
 			</CardFooter>
 		</Card>

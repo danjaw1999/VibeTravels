@@ -1,4 +1,4 @@
-import type { SupabaseClient, Tables } from '@/db/supabase.client';
+import type { SupabaseClient, Tables } from '@/db/supabase';
 import type { z } from 'zod';
 import type { travelNoteQuerySchema } from '../schemas/travel-note-query.schema';
 import type { travelNoteUpdateSchema } from '../schemas/travel-note-update.schema';
@@ -67,9 +67,7 @@ export class TravelNoteService {
         console.error('[TravelNoteService] No session or user found in session.');
         throw new Error('User must be authenticated to create a travel note');
       }
-
-      console.log('[TravelNoteService] Creating note with user:', session.user.id);
-
+        
       // Directly create the travel note with the current session
       const { data, error } = await this.supabase
         .from('travel_notes')
@@ -103,6 +101,9 @@ export class TravelNoteService {
   }
 
   async listTravelNotes(query: TravelNoteQuery): Promise<{ data: TravelNoteDTO[]; total: number }> {
+    const { data: { session } } = await this.supabase.auth.getSession();
+    const userId = session?.user?.id;
+
     let queryBuilder = this.supabase
       .from('travel_notes')
       .select('*, attractions(*)', { count: 'exact' });
@@ -111,8 +112,10 @@ export class TravelNoteService {
       queryBuilder = queryBuilder.ilike('name', `%${query.location}%`);
     }
 
-    if (query.isPublic !== undefined) {
-      queryBuilder = queryBuilder.eq('is_public', query.isPublic);
+    if (userId) {
+      queryBuilder = queryBuilder.or(`is_public.eq.true,and(user_id.eq.${userId})`);
+    } else {
+      queryBuilder = queryBuilder.eq('is_public', true);
     }
 
     if (query.sortBy) {
@@ -126,9 +129,14 @@ export class TravelNoteService {
     const { from, to } = this.getPagination(query.page, query.limit);
     queryBuilder = queryBuilder.range(from, to);
 
+
     const { data, error, count } = await queryBuilder;
 
-    if (error) throw error;
+    if (error) {
+      console.error('Query error:', error);
+      throw error;
+    }
+
     return { 
       data: (data || []).map(note => this.mapToDTO(note)), 
       total: count || 0 

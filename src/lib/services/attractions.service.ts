@@ -1,4 +1,4 @@
-import type { SupabaseClient } from '@/db/supabase.client';
+import type { SupabaseClient } from '@/db/supabase';
 import type { AttractionDTO, UUID, AttractionSuggestionDTO, CreateAttractionCommand } from '@/types';
 import type { AttractionCreateInput } from '@lib/schemas/attractions.schema';
 import { DatabaseError, NotFoundError, ForbiddenError } from '@lib/errors/api.error';
@@ -57,7 +57,7 @@ export class AttractionsService {
 
   async generateAttractionSuggestions(
     { name, description }: { name: string; description: string },
-    limit = 5,
+    limit = 6,
     excludeNames: string[] = []
   ): Promise<AttractionSuggestionDTO[]> {
     const excludeContext = excludeNames.length > 0 

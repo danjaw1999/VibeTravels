@@ -88,11 +88,11 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     }
 
     const body = await request.json();
+    
     const validatedData = createTravelNoteSchema.parse(body);
 
     
     const service = new TravelNoteService(locals.supabase);
-    console.log('locals', locals, 'service', service);
     const note = await service.createTravelNote(validatedData);
 
     // Check if client wants redirect or JSON response
