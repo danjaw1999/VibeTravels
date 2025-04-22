@@ -48,6 +48,7 @@ teardown("clean up Supabase database", async () => {
       if (attractionsError) {
         console.error("Error deleting attractions:", attractionsError.message);
       } else {
+        console.error("Failed to delete all travel notes.");
       }
 
       const { error: notesError } = await supabase.from("travel_notes").delete().in("id", travelNoteIds);
@@ -61,9 +62,11 @@ teardown("clean up Supabase database", async () => {
           if (error) {
             console.error(`Error deleting note ${noteId}:`, error.message);
           } else {
+            console.error("Failed to delete all travel notes.");
           }
         }
       } else {
+        console.error("Failed to delete all travel notes.");
       }
     }
 
@@ -76,6 +79,7 @@ teardown("clean up Supabase database", async () => {
       console.error("Error verifying deletion:", verifyError.message);
     } else {
       if (remainingNotes && remainingNotes.length > 0) {
+        console.error("Failed to delete all travel notes.");
       }
     }
   } catch (error) {

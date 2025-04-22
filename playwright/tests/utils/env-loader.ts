@@ -20,8 +20,6 @@ export function loadEnvironmentVariables(context = "default") {
     config({ path: envPath });
     return;
   }
-
-  console.warn(`[${context}] No .env or .env.test file found`);
 }
 
 /**

@@ -7,7 +7,9 @@ test.describe("Authentication tests", () => {
     try {
       // Spróbuj odwiedzić stronę wylogowania
       await page.goto("/logout");
-    } catch (error) {}
+    } catch (error) {
+      console.error("Failed to logout:", error);
+    }
 
     // Opcjonalnie - wyczyść localStorage i cookies aby mieć pewność
     await page.evaluate(() => {
@@ -63,7 +65,9 @@ test.describe("Authentication tests", () => {
     } catch (error) {
       try {
         await page.goto("/logout");
-      } catch (logoutError) {}
+      } catch (logoutError) {
+        console.error("Failed to logout:", logoutError, error);
+      }
     }
   });
 });

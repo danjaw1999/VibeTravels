@@ -1,5 +1,5 @@
 import { test as setup } from "@playwright/test";
-import { loadEnvironmentVariables, logEnvironmentVariables } from "./utils/env-loader";
+import { loadEnvironmentVariables } from "./utils/env-loader";
 
 loadEnvironmentVariables("auth-setup");
 
