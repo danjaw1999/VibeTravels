@@ -12,7 +12,7 @@ export interface PexelsImage {
   source: string;
 }
 
-let requestsThisHour = 0;
+const requestsThisHour = 0;
 const MAX_REQUESTS_PER_HOUR = 200;
 const requestTimes: number[] = [];
 

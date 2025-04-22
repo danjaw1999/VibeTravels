@@ -21,13 +21,13 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
-type AnimationValue = {
+interface AnimationValue {
   opacity?: number;
   scale?: number;
   transform?: string;
   duration?: string;
   easing?: string;
-};
+}
 
 declare module "astro:transitions" {
   interface TransitionAnimationValue {

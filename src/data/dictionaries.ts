@@ -196,13 +196,9 @@ export enum Library {
 }
 
 // Define relationships between layers, stacks, and libraries
-export interface LayerToStackMap {
-  [key: string]: Stack[];
-}
+export type LayerToStackMap = Record<string, Stack[]>;
 
-export interface StackToLibraryMap {
-  [key: string]: Library[];
-}
+export type StackToLibraryMap = Record<string, Library[]>;
 
 // Map layers to stacks
 export const layerToStackMap: LayerToStackMap = {

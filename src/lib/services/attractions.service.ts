@@ -6,14 +6,14 @@ import { openai } from "@lib/openai.client";
 import { searchAttractionImage } from "@lib/pexels.client";
 
 interface OpenAIAttractionResponse {
-  attractions: Array<{
+  attractions: {
     name: string;
     description: string;
     latitude: number;
     longitude: number;
     image?: string;
     estimatedPrice: string;
-  }>;
+  }[];
 }
 
 // Stałe Unsplash dla popularnych typów atrakcji

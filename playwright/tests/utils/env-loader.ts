@@ -4,9 +4,8 @@ import * as fs from "node:fs";
 
 /**
  * Funkcja ładująca zmienne środowiskowe z plików .env i .env.test
- * @param context Nazwa kontekstu dla celów logowania
  */
-export function loadEnvironmentVariables(context = "default") {
+export function loadEnvironmentVariables() {
   // Najpierw sprawdź, czy istnieje plik .env.test
   const testEnvPath = path.resolve(process.cwd(), ".env.test");
   if (fs.existsSync(testEnvPath)) {
