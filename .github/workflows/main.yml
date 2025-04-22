@@ -3,8 +3,6 @@ name: VibeTravels CI/CD
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch: # Pozwala na ręczne uruchomienie
 
 jobs:
@@ -21,8 +19,8 @@ jobs:
         id: nvmrc
         run: echo "node-version=$(cat .nvmrc)" >> $GITHUB_OUTPUT
 
-  test:
-    name: Test
+  lint-and-test:
+    name: Lint and Test
     runs-on: ubuntu-latest
     needs: setup
     steps:
@@ -47,25 +45,9 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Prepare Playwright directories
-        run: mkdir -p playwright/.auth
-
-      - name: Run E2E tests
-        run: npm run test:e2e
-        env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          E2E_USERNAME_ID: ${{ secrets.E2E_USERNAME_ID }}
-          E2E_USERNAME: ${{ secrets.E2E_USERNAME }}
-          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
-          CI: true
-
   build:
     name: Build
-    needs: [setup, test]
+    needs: [setup, lint-and-test]
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -79,6 +61,14 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Create .env file
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" >> .env
+          echo "SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.PUBLIC_SUPABASE_KEY }}" >> .env
 
       - name: Build
         run: npm run build
@@ -96,7 +86,7 @@ jobs:
   deploy:
     name: Deploy
     needs: [setup, build]
-    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

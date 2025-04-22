@@ -27,8 +27,8 @@ export function loadEnvironmentVariables() {
  */
 export function logEnvironmentVariables(context = "default") {
   console.log(`[${context}] Available environment variables:`, {
-    E2E_USERNAME: process.env.E2E_USERNAME,
-    E2E_USERNAME_ID: process.env.E2E_USERNAME_ID,
+    E2E_USERNAME: !!process.env.E2E_USERNAME,
+    E2E_USERNAME_ID: !!process.env.E2E_USERNAME_ID,
     E2E_PASSWORD_EXISTS: !!process.env.E2E_PASSWORD,
     SUPABASE_URL_EXISTS: !!process.env.SUPABASE_URL,
     SUPABASE_KEY_EXISTS: !!process.env.SUPABASE_KEY,

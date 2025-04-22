@@ -96,6 +96,14 @@ jobs:
       - name: Prepare Playwright directories
         run: mkdir -p playwright/.auth
 
+      - name: Create .env file
+        run: |
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" > .env
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env
+          echo "SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" >> .env
+          echo "SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.PUBLIC_SUPABASE_KEY }}" >> .env
+
       - name: Run E2E tests
         run: npm run test:e2e
         env:
