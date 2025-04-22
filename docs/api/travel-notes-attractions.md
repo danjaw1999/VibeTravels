@@ -10,10 +10,10 @@ GET /api/travel-notes/:id/attractions/generate
 
 ### Query Parameters
 
-| Parameter | Type     | Description                                                |
-|-----------|----------|------------------------------------------------------------|
-| limit     | number   | Maximum number of suggestions to generate (default: 10)     |
-| exclude   | string   | Comma-separated list of attraction names to exclude         |
+| Parameter | Type   | Description                                             |
+| --------- | ------ | ------------------------------------------------------- |
+| limit     | number | Maximum number of suggestions to generate (default: 10) |
+| exclude   | string | Comma-separated list of attraction names to exclude     |
 
 ### Response
 
@@ -34,11 +34,11 @@ GET /api/travel-notes/:id/attractions/generate
 
 ### Error Responses
 
-| Status | Description                                        |
-|--------|----------------------------------------------------|
-| 400    | Invalid query parameters                           |
-| 404    | Travel note not found                             |
-| 500    | Internal server error or OpenAI API error         |
+| Status | Description                               |
+| ------ | ----------------------------------------- |
+| 400    | Invalid query parameters                  |
+| 404    | Travel note not found                     |
+| 500    | Internal server error or OpenAI API error |
 
 ## Add Attractions to Travel Note
 
@@ -84,13 +84,13 @@ POST /api/travel-notes/:id/attractions
 
 ### Error Responses
 
-| Status | Description                                        |
-|--------|----------------------------------------------------|
-| 400    | Invalid request body                              |
-| 401    | Unauthorized - User not authenticated             |
-| 403    | Forbidden - User does not own the travel note     |
-| 404    | Travel note not found                             |
-| 500    | Internal server error                             |
+| Status | Description                                   |
+| ------ | --------------------------------------------- |
+| 400    | Invalid request body                          |
+| 401    | Unauthorized - User not authenticated         |
+| 403    | Forbidden - User does not own the travel note |
+| 404    | Travel note not found                         |
+| 500    | Internal server error                         |
 
 ## Examples
 
@@ -119,4 +119,4 @@ curl -X POST "/api/travel-notes/123/attractions" \
       }
     ]
   }'
-``` 
+```

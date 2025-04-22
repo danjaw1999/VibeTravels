@@ -3,17 +3,20 @@
 ## 1. Resources
 
 ### Users
+
 - Maps to `users` table
 - Represents user accounts and profiles
 - Contains authentication and profile information
 
 ### TravelNotes
+
 - Maps to `travel_notes` table
 - Represents travel plans and notes
 - Contains destination and description information
 - Can be public or private
 
 ### Attractions
+
 - Maps to `attractions` table
 - Represents points of interest within travel notes
 - Contains location and descriptive information
@@ -24,6 +27,7 @@
 ### Authentication
 
 #### Register User
+
 - **Method**: POST
 - **Path**: `/api/auth/register`
 - **Description**: Register a new user account
@@ -49,6 +53,7 @@
   - 409: Email already exists
 
 #### Login
+
 - **Method**: POST
 - **Path**: `/api/auth/login`
 - **Description**: Authenticate user and get access token
@@ -76,6 +81,7 @@
 ### User Profile
 
 #### Get Profile
+
 - **Method**: GET
 - **Path**: `/api/users/me`
 - **Description**: Get current user's profile
@@ -92,6 +98,7 @@
   - 401: Unauthorized
 
 #### Update Profile
+
 - **Method**: PATCH
 - **Path**: `/api/users/me`
 - **Description**: Update current user's profile
@@ -117,6 +124,7 @@
 ### Travel Notes
 
 #### List Travel Notes
+
 - **Method**: GET
 - **Path**: `/api/travel-notes`
 - **Description**: Get list of travel notes (public ones and user's private ones)
@@ -158,6 +166,7 @@
   ```
 
 #### Create Travel Note
+
 - **Method**: POST
 - **Path**: `/api/travel-notes`
 - **Description**: Create a new travel note
@@ -186,6 +195,7 @@
   - 400: Invalid input data
 
 #### Get Travel Note
+
 - **Method**: GET
 - **Path**: `/api/travel-notes/:id`
 - **Description**: Get a specific travel note
@@ -218,6 +228,7 @@
   - 403: Access denied (private note of another user)
 
 #### Update Travel Note
+
 - **Method**: PATCH
 - **Path**: `/api/travel-notes/:id`
 - **Description**: Update a travel note
@@ -258,6 +269,7 @@
   - 400: Invalid input data
 
 #### Delete Travel Note
+
 - **Method**: DELETE
 - **Path**: `/api/travel-notes/:id`
 - **Description**: Delete a travel note
@@ -270,6 +282,7 @@
 ### Attractions
 
 #### Generate Attractions
+
 - **Method**: POST
 - **Path**: `/api/travel-notes/:id/attractions/generate`
 - **Description**: Generate attractions using AI based on travel note
@@ -311,6 +324,7 @@
   - 429: Too many requests (Pexels API rate limit)
 
 #### Add Attractions
+
 - **Method**: POST
 - **Path**: `/api/travel-notes/:id/attractions`
 - **Description**: Add attractions to a travel note
@@ -359,6 +373,7 @@
   - 400: Invalid input data
 
 #### Delete Attraction
+
 - **Method**: DELETE
 - **Path**: `/api/travel-notes/:noteId/attractions/:id`
 - **Description**: Remove an attraction from a travel note
@@ -371,12 +386,14 @@
 ## 3. Authentication and Authorization
 
 ### Authentication
+
 - Uses Supabase authentication system
 - JWT-based authentication
 - Tokens provided in Authorization header: `Bearer <token>`
 - Token refresh mechanism handled by Supabase client
 
 ### Authorization
+
 - Row Level Security (RLS) policies enforced by Supabase
 - API endpoints check user permissions before operations
 - Travel notes access controlled by `is_public` flag and ownership
@@ -385,24 +402,28 @@
 ## 4. Validation and Business Logic
 
 ### User Validation
+
 - Email must be valid and unique
 - Password must meet security requirements (min length, complexity)
 - Profile description is optional
 
 ### Travel Note Validation
+
 - Name is required and cannot be empty
 - Description is required and cannot be empty
 - `is_public` defaults to true if not specified
 
 ### Attraction Validation
+
 - Name is required and cannot be empty
 - Latitude must be between -90 and 90
 - Longitude must be between -180 and 180
 - Image URL must be valid if provided
 
 ### Business Logic
+
 - AI generation rate limited to prevent abuse
 - Cascading deletes handled by database constraints
 - Automatic timestamp updates for created_at and updated_at
 - Google Maps links generated from latitude/longitude data
-- Public/private visibility controlled at travel note level 
+- Public/private visibility controlled at travel note level

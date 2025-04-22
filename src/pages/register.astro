@@ -16,13 +16,12 @@ const {
 
 // Redirect authenticated users
 if (user && !authError) {
-  return Astro.redirect('/', 302);
+  return Astro.redirect("/", 302);
 }
-
 ---
 
 <Layout title="Zarejestruj się - VibeTravels">
   <div class="container max-w-md mx-auto py-10">
-      <RegisterForm client:load />
+    <RegisterForm client:load />
   </div>
 </Layout>

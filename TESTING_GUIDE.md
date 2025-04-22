@@ -64,14 +64,14 @@ Guidelines for writing unit tests:
 Example:
 
 ```tsx
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import MyComponent from '../MyComponent';
+import { describe, it, expect, vi } from "vitest";
+import { render, screen } from "@testing-library/react";
+import MyComponent from "../MyComponent";
 
-describe('MyComponent', () => {
-  it('renders correctly', () => {
+describe("MyComponent", () => {
+  it("renders correctly", () => {
     render(<MyComponent />);
-    expect(screen.getByText('Hello')).toBeInTheDocument();
+    expect(screen.getByText("Hello")).toBeInTheDocument();
   });
 });
 ```
@@ -90,13 +90,13 @@ Guidelines for writing E2E tests:
 Example:
 
 ```typescript
-import { test, expect } from '@playwright/test';
-import { HomePage } from '../page-objects/HomePage';
+import { test, expect } from "@playwright/test";
+import { HomePage } from "../page-objects/HomePage";
 
-test('should navigate to about page', async ({ page }) => {
+test("should navigate to about page", async ({ page }) => {
   const homePage = new HomePage(page);
   await homePage.goto();
-  await homePage.clickNavLink('About');
+  await homePage.clickNavLink("About");
   await expect(page).toHaveURL(/.*about/);
 });
 ```
@@ -109,4 +109,4 @@ test('should navigate to about page', async ({ page }) => {
 4. **Use meaningful assertions** - Make sure your test verifies what you think it does
 5. **Match test structure to application structure** - Makes tests easier to find
 6. **Minimize use of snapshot testing** - Use for stable components only
-7. **Run tests in CI/CD pipeline** - Ensure tests pass before deployment 
+7. **Run tests in CI/CD pipeline** - Ensure tests pass before deployment

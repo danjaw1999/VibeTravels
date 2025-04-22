@@ -25,11 +25,13 @@ SUPABASE_KEY=your_supabase_key
 This test suite includes:
 
 1. **Authentication Setup** (`auth.setup.ts`)
+
    - Logs in using the E2E test credentials from environment variables
    - Saves the authentication state for use in subsequent tests
    - Creates a storage state file at `playwright/.auth/user.json`
 
-2. **Travel Note Creation Test** (`create-travel-note.spec.ts`) 
+2. **Travel Note Creation Test** (`create-travel-note.spec.ts`)
+
    - Creates a new travel note with a unique name
    - Uses the authenticated state from the setup
    - Verifies the note was created successfully
@@ -47,6 +49,7 @@ npx playwright test
 ```
 
 The tests will run in sequence:
+
 1. Authentication setup
 2. Tests (including travel note creation)
 3. Database cleanup

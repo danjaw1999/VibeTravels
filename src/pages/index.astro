@@ -1,16 +1,9 @@
 ---
-import Layout from '@/layouts/Layout.astro';
-import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardHeader,
-  CardContent,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from '@/components/ui/card';
-import { CreateNoteCardButton } from '@/components/CreateNoteCardButton';
-import { createSupabaseServerInstance } from '@/db/supabase';
+import Layout from "@/layouts/Layout.astro";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { CreateNoteCardButton } from "@/components/CreateNoteCardButton";
+import { createSupabaseServerInstance } from "@/db/supabase";
 
 const supabase = createSupabaseServerInstance({
   cookies: Astro.cookies,
@@ -20,28 +13,21 @@ const supabase = createSupabaseServerInstance({
 const {
   data: { user },
 } = await supabase.auth.getUser();
-
-
 ---
 
-
 <Layout title="Welcome to VibeTravels">
-  <main 
-    class="container mx-auto px-4 py-8 min-h-screen"
-    transition:animate="slide"
-  >
-    <div 
-      class="text-center mb-12 animate-fade-in"
-    >
-      <h1 class="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60" data-testid="welcome-message">
-        Welcome {user ? user.email : 'to VibeTravels'}
+  <main class="container mx-auto px-4 py-8 min-h-screen" transition:animate="slide">
+    <div class="text-center mb-12 animate-fade-in">
+      <h1
+        class="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60"
+        data-testid="welcome-message"
+      >
+        Welcome {user ? user.email : "to VibeTravels"}
       </h1>
       <p class="text-xl text-muted-foreground">Start sharing your travel experiences</p>
     </div>
 
-    <div 
-      class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto animate-fade-in"
-    >
+    <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto animate-fade-in">
       <Card className="group hover:shadow-lg transition-all duration-300">
         <CardHeader>
           <CardTitle>Create Travel Note</CardTitle>
@@ -70,12 +56,31 @@ const {
         <CardFooter>
           <Button asChild variant="secondary" className="w-full group">
             <a href="/travel-notes" class="inline-flex items-center gap-2" data-testid="travel-notes-button">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"
+                ></path>
               </svg>
               <span>Browse Notes</span>
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4 transform group-hover:translate-x-1 transition-transform"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
               </svg>
             </a>
           </Button>
@@ -87,8 +92,14 @@ const {
 
 <style>
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .animate-fade-in {
@@ -101,6 +112,11 @@ const {
     animation: fade-in 0.5s ease-out forwards;
   }
 
-  .animate-fade-in > *:nth-child(1) { animation-delay: 0.1s; }
-  .animate-fade-in > *:nth-child(2) { animation-delay: 0.2s; }
-</style> 
+  .animate-fade-in > *:nth-child(1) {
+    animation-delay: 0.1s;
+  }
+  .animate-fade-in > *:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+</style>
+

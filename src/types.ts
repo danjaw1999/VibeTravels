@@ -1,12 +1,12 @@
-import type { Database, SupabaseClient } from './db/supabase';
-import type { User } from '@supabase/supabase-js';
+import type { Database, SupabaseClient } from "./db/supabase";
+import type { User } from "@supabase/supabase-js";
 
-type DBTables = Database['public']['Tables'];
+type DBTables = Database["public"]["Tables"];
 
 // Base types from database
-type DBUser = DBTables['users']['Row'];
-type DBTravelNote = DBTables['travel_notes']['Row'];
-type DBAttraction = DBTables['attractions']['Row'];
+type DBUser = DBTables["users"]["Row"];
+type DBTravelNote = DBTables["travel_notes"]["Row"];
+type DBAttraction = DBTables["attractions"]["Row"];
 
 // Common types
 export type UUID = string;
@@ -146,26 +146,25 @@ export interface TravelNoteQueryParams {
 
 // Type Guards and Validators
 export const isTravelNoteDTO = (obj: unknown): obj is TravelNoteDTO => {
-  return obj !== null &&
-    typeof obj === 'object' &&
-    'id' in obj &&
-    'user_id' in obj &&
-    'name' in obj &&
-    'description' in obj &&
-    'is_public' in obj &&
-    'attractions' in obj;
+  return (
+    obj !== null &&
+    typeof obj === "object" &&
+    "id" in obj &&
+    "user_id" in obj &&
+    "name" in obj &&
+    "description" in obj &&
+    "is_public" in obj &&
+    "attractions" in obj
+  );
 };
 
 export const isAttractionDTO = (obj: unknown): obj is AttractionDTO => {
-  return obj !== null &&
-    typeof obj === 'object' &&
-    'id' in obj &&
-    'name' in obj &&
-    'latitude' in obj &&
-    'longitude' in obj;
+  return (
+    obj !== null && typeof obj === "object" && "id" in obj && "name" in obj && "latitude" in obj && "longitude" in obj
+  );
 };
 
-export interface UserProfileDTO extends Pick<UserDTO, 'id' | 'email' | 'profile_description'> {
+export interface UserProfileDTO extends Pick<UserDTO, "id" | "email" | "profile_description"> {
   updated_at: ISODateTime;
 }
 
@@ -204,4 +203,4 @@ export interface AttractionBulkCreateResponseDTO {
 
 export interface GenerateAttractionsResponseDTO {
   suggestions: GeneratedAttractionDTO[];
-} 
+}

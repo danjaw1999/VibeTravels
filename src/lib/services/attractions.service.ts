@@ -1,9 +1,9 @@
-import type { SupabaseClient } from '@/db/supabase';
-import type { AttractionDTO, UUID, AttractionSuggestionDTO, CreateAttractionCommand } from '@/types';
-import type { AttractionCreateInput } from '@lib/schemas/attractions.schema';
-import { DatabaseError, NotFoundError, ForbiddenError } from '@lib/errors/api.error';
-import { openai } from '@lib/openai.client';
-import { searchAttractionImage } from '@lib/pexels.client';
+import type { SupabaseClient } from "@/db/supabase";
+import type { AttractionDTO, UUID, AttractionSuggestionDTO, CreateAttractionCommand } from "@/types";
+import type { AttractionCreateInput } from "@lib/schemas/attractions.schema";
+import { DatabaseError, NotFoundError, ForbiddenError } from "@lib/errors/api.error";
+import { openai } from "@lib/openai.client";
+import { searchAttractionImage } from "@lib/pexels.client";
 
 interface OpenAIAttractionResponse {
   attractions: Array<{
@@ -18,36 +18,36 @@ interface OpenAIAttractionResponse {
 
 // Stałe Unsplash dla popularnych typów atrakcji
 const UNSPLASH_IMAGES = {
-  castle: 'https://images.unsplash.com/photo-1533050487297-09b450131914',
-  palace: 'https://images.unsplash.com/photo-1630335856915-3987afdfdc9a',
-  church: 'https://images.unsplash.com/photo-1548867736-82d26c916532',
-  cathedral: 'https://images.unsplash.com/photo-1558697698-9300a84a6a99',
-  museum: 'https://images.unsplash.com/photo-1554907984-15263bfd63bd',
-  park: 'https://images.unsplash.com/photo-1568515387631-8b650bbcdb90',
-  garden: 'https://images.unsplash.com/photo-1585320806297-9794b3e4eeae',
-  tower: 'https://images.unsplash.com/photo-1569951715254-38f4647d55e6',
-  monument: 'https://images.unsplash.com/photo-1547995886-6dc09384c6e6',
-  square: 'https://images.unsplash.com/photo-1552602986-96e5b85f2f6a',
-  beach: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e',
-  mountain: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b',
-  temple: 'https://images.unsplash.com/photo-1548018560-c7196548e84d',
-  market: 'https://images.unsplash.com/photo-1555679486-e341a3e7b6de',
-  bridge: 'https://images.unsplash.com/photo-1514924013411-cbf25faa35bb',
-  ruins: 'https://images.unsplash.com/photo-1548019979-e54c9092cd42',
-  waterfall: 'https://images.unsplash.com/photo-1432405972618-c60b0225b8f9'
+  castle: "https://images.unsplash.com/photo-1533050487297-09b450131914",
+  palace: "https://images.unsplash.com/photo-1630335856915-3987afdfdc9a",
+  church: "https://images.unsplash.com/photo-1548867736-82d26c916532",
+  cathedral: "https://images.unsplash.com/photo-1558697698-9300a84a6a99",
+  museum: "https://images.unsplash.com/photo-1554907984-15263bfd63bd",
+  park: "https://images.unsplash.com/photo-1568515387631-8b650bbcdb90",
+  garden: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae",
+  tower: "https://images.unsplash.com/photo-1569951715254-38f4647d55e6",
+  monument: "https://images.unsplash.com/photo-1547995886-6dc09384c6e6",
+  square: "https://images.unsplash.com/photo-1552602986-96e5b85f2f6a",
+  beach: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
+  mountain: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
+  temple: "https://images.unsplash.com/photo-1548018560-c7196548e84d",
+  market: "https://images.unsplash.com/photo-1555679486-e341a3e7b6de",
+  bridge: "https://images.unsplash.com/photo-1514924013411-cbf25faa35bb",
+  ruins: "https://images.unsplash.com/photo-1548019979-e54c9092cd42",
+  waterfall: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9",
 };
 
 // Funkcja pomocnicza do znalezienia pasującego zdjęcia
 function findMatchingImage(name: string, description: string): string {
   const text = `${name} ${description}`.toLowerCase();
-  
+
   for (const [key, url] of Object.entries(UNSPLASH_IMAGES)) {
     if (text.includes(key)) {
       // Dodaj parametry Unsplash dla lepszej jakości i optymalizacji
       return `${url}?auto=format&fit=crop&w=1280&q=80`;
     }
   }
-  
+
   // Domyślne zdjęcie dla zabytku/atrakcji
   return `${UNSPLASH_IMAGES.monument}?auto=format&fit=crop&w=1280&q=80`;
 }
@@ -60,9 +60,10 @@ export class AttractionsService {
     limit = 6,
     excludeNames: string[] = []
   ): Promise<AttractionSuggestionDTO[]> {
-    const excludeContext = excludeNames.length > 0 
-      ? `\nProszę pominąć te atrakcje, które już zostały zasugerowane: ${excludeNames.join(', ')}`
-      : '';
+    const excludeContext =
+      excludeNames.length > 0
+        ? `\nProszę pominąć te atrakcje, które już zostały zasugerowane: ${excludeNames.join(", ")}`
+        : "";
 
     const prompt = `Wygeneruj ${limit} unikalnych sugestii atrakcji turystycznych na podstawie notatki podróżniczej:
     Tytuł: ${name}
@@ -127,27 +128,27 @@ export class AttractionsService {
       response_format: { type: "json_object" },
       max_tokens: 4000,
       presence_penalty: 0.1,
-      frequency_penalty: 0.1
+      frequency_penalty: 0.1,
     });
 
     const content = completion.choices[0]?.message?.content;
     if (!content) {
-      throw new Error('OpenAI returned empty response');
+      throw new Error("OpenAI returned empty response");
     }
 
     let response: OpenAIAttractionResponse;
     try {
       // Upewnij się, że mamy pełną odpowiedź JSON
-      if (!content.trim().endsWith('}')) {
-        console.error('Incomplete JSON response:', content);
-        throw new Error('Received incomplete JSON response from OpenAI');
+      if (!content.trim().endsWith("}")) {
+        console.error("Incomplete JSON response:", content);
+        throw new Error("Received incomplete JSON response from OpenAI");
       }
 
       response = JSON.parse(content) as OpenAIAttractionResponse;
-      
+
       if (!response.attractions || !Array.isArray(response.attractions)) {
-        console.error('Invalid response structure:', response);
-        throw new Error('Invalid response structure from OpenAI');
+        console.error("Invalid response structure:", response);
+        throw new Error("Invalid response structure from OpenAI");
       }
 
       // Sprawdź czy mamy dokładnie oczekiwaną liczbę atrakcji
@@ -157,39 +158,44 @@ export class AttractionsService {
       }
 
       for (const attraction of response.attractions) {
-        if (!attraction.name || !attraction.description || 
-            typeof attraction.latitude !== 'number' || 
-            typeof attraction.longitude !== 'number' ||
-            !attraction.estimatedPrice) {
-          console.error('Invalid attraction data:', attraction);
-          throw new Error('Invalid attraction data in OpenAI response');
+        if (
+          !attraction.name ||
+          !attraction.description ||
+          typeof attraction.latitude !== "number" ||
+          typeof attraction.longitude !== "number" ||
+          !attraction.estimatedPrice
+        ) {
+          console.error("Invalid attraction data:", attraction);
+          throw new Error("Invalid attraction data in OpenAI response");
         }
 
         // Sprawdź czy estimatedPrice nie jest ucięte
-        if (attraction.estimatedPrice.endsWith('...') || 
-            attraction.estimatedPrice.toLowerCase().startsWith('bezpłat') && 
-            !attraction.estimatedPrice.toLowerCase().includes('bezpłatne') && 
-            !attraction.estimatedPrice.toLowerCase().includes('bezpłatny')) {
-          console.error('Truncated estimatedPrice:', attraction.estimatedPrice);
-          throw new Error('Truncated price information in OpenAI response');
+        if (
+          attraction.estimatedPrice.endsWith("...") ||
+          (attraction.estimatedPrice.toLowerCase().startsWith("bezpłat") &&
+            !attraction.estimatedPrice.toLowerCase().includes("bezpłatne") &&
+            !attraction.estimatedPrice.toLowerCase().includes("bezpłatny"))
+        ) {
+          console.error("Truncated estimatedPrice:", attraction.estimatedPrice);
+          throw new Error("Truncated price information in OpenAI response");
         }
       }
     } catch (error) {
-      console.error('Failed to parse or validate OpenAI response:', content);
+      console.error("Failed to parse or validate OpenAI response:", content);
       if (error instanceof Error) {
         throw new Error(`OpenAI response processing failed: ${error.message}`);
       }
-      throw new Error('Failed to process OpenAI response');
+      throw new Error("Failed to process OpenAI response");
     }
-    
+
     // Pobierz zdjęcia dla wszystkich atrakcji równolegle
     const attractionsWithImages = await Promise.all(
       response.attractions.map(async ({ name, description, latitude, longitude, estimatedPrice }) => {
         // Najpierw sprawdź czy mamy już zapisane zdjęcie dla tej atrakcji
         const { data: existingAttraction } = await this.supabase
-          .from('attractions')
-          .select('image, image_photographer, image_photographer_url, image_source')
-          .eq('name', name)
+          .from("attractions")
+          .select("image, image_photographer, image_photographer_url, image_source")
+          .eq("name", name)
           .single();
 
         if (existingAttraction?.image) {
@@ -200,55 +206,51 @@ export class AttractionsService {
             longitude,
             image: {
               url: existingAttraction.image,
-              photographer: existingAttraction.image_photographer || '',
-              photographerUrl: existingAttraction.image_photographer_url || '',
-              source: existingAttraction.image_source || ''
+              photographer: existingAttraction.image_photographer || "",
+              photographerUrl: existingAttraction.image_photographer_url || "",
+              source: existingAttraction.image_source || "",
             },
-            estimatedPrice: estimatedPrice || 'Cena nieznana'
+            estimatedPrice: estimatedPrice || "Cena nieznana",
           };
         }
 
         // Jeśli nie mamy zapisanego zdjęcia, pobierz nowe z Pexels
         const englishName = name.match(/\((.*?)\)/)?.[1] || name;
         const pexelsImage = await searchAttractionImage(englishName);
-        
+
         return {
           name,
           description,
           latitude,
           longitude,
           image: pexelsImage,
-          estimatedPrice: estimatedPrice || 'Cena nieznana'
+          estimatedPrice: estimatedPrice || "Cena nieznana",
         };
       })
     );
-    
+
     return attractionsWithImages;
   }
 
-  async addAttractions(
-    noteId: UUID,
-    userId: UUID,
-    attractions: AttractionCreateInput[]
-  ): Promise<AttractionDTO[]> {
+  async addAttractions(noteId: UUID, userId: UUID, attractions: AttractionCreateInput[]): Promise<AttractionDTO[]> {
     // First verify the travel note exists and belongs to the user
     const { data: note, error: noteError } = await this.supabase
-      .from('travel_notes')
-      .select('id, user_id')
-      .eq('id', noteId)
+      .from("travel_notes")
+      .select("id, user_id")
+      .eq("id", noteId)
       .single();
 
     if (noteError) {
-      throw new DatabaseError('Failed to fetch travel note', noteError);
+      throw new DatabaseError("Failed to fetch travel note", noteError);
     }
-    
+
     if (!note) {
       throw new NotFoundError(`Travel note with id ${noteId} not found`);
     }
 
     const { user_id } = note;
     if (user_id !== userId) {
-      throw new ForbiddenError('You do not have permission to modify this travel note');
+      throw new ForbiddenError("You do not have permission to modify this travel note");
     }
 
     // For each attraction that doesn't have an image, try to find one
@@ -262,7 +264,7 @@ export class AttractionsService {
               image: pexelsImage.url,
               image_photographer: pexelsImage.photographer,
               image_photographer_url: pexelsImage.photographerUrl,
-              image_source: pexelsImage.source
+              image_source: pexelsImage.source,
             };
           }
         }
@@ -272,43 +274,47 @@ export class AttractionsService {
 
     // Insert attractions in a transaction
     const { data: createdAttractions, error: insertError } = await this.supabase
-      .from('attractions')
+      .from("attractions")
       .insert(
-        attractionsWithImages.map(attraction => ({
+        attractionsWithImages.map((attraction) => ({
           ...attraction,
-          travel_note_id: noteId
+          travel_note_id: noteId,
         }))
       )
-      .select('*');
+      .select("*");
 
     if (insertError) {
-      throw new DatabaseError('Failed to create attractions', insertError);
+      throw new DatabaseError("Failed to create attractions", insertError);
     }
 
-    return createdAttractions.map(({ 
-      id, 
-      name, 
-      description, 
-      image, 
-      image_photographer,
-      image_photographer_url,
-      image_source,
-      latitude, 
-      longitude, 
-      created_at 
-    }) => ({
-      id,
-      name,
-      description,
-      image: image ? {
-        url: image,
-        photographer: image_photographer || '',
-        photographerUrl: image_photographer_url || '',
-        source: image_source || ''
-      } : null,
-      latitude,
-      longitude,
-      createdAt: created_at
-    }));
+    return createdAttractions.map(
+      ({
+        id,
+        name,
+        description,
+        image,
+        image_photographer,
+        image_photographer_url,
+        image_source,
+        latitude,
+        longitude,
+        created_at,
+      }) => ({
+        id,
+        name,
+        description,
+        image: image
+          ? {
+              url: image,
+              photographer: image_photographer || "",
+              photographerUrl: image_photographer_url || "",
+              source: image_source || "",
+            }
+          : null,
+        latitude,
+        longitude,
+        createdAt: created_at,
+      })
+    );
   }
-} 
+}

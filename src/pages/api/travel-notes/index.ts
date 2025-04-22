@@ -1,8 +1,8 @@
-import type { APIRoute } from 'astro';
-import { travelNoteQuerySchema } from '@/lib/schemas/travel-note-query.schema';
-import { TravelNoteService } from '@/lib/services/travel-note.service';
-import { createTravelNoteSchema } from '@/lib/schemas/travel-note.schema';
-import { z } from 'zod';
+import type { APIRoute } from "astro";
+import { travelNoteQuerySchema } from "@/lib/schemas/travel-note-query.schema";
+import { TravelNoteService } from "@/lib/services/travel-note.service";
+import { createTravelNoteSchema } from "@/lib/schemas/travel-note.schema";
+import { z } from "zod";
 
 export const prerender = false;
 
@@ -13,27 +13,27 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const params = Object.fromEntries(url.searchParams);
 
     // If isPublic is not explicitly set to false, we'll show public notes
-    const showPublicOnly = params.isPublic !== 'false';
-    
+    const showPublicOnly = params.isPublic !== "false";
+
     // Only check auth if we want to see private notes
     let userId: string | undefined;
     if (!showPublicOnly) {
-      const { data: { user }, error: authError } = await locals.supabase.auth.getUser();
+      const {
+        data: { user },
+        error: authError,
+      } = await locals.supabase.auth.getUser();
       if (authError || !user?.id) {
-        return new Response(
-          JSON.stringify({ error: 'Authentication required to view private notes' }),
-          { 
-            status: 401,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        );
+        return new Response(JSON.stringify({ error: "Authentication required to view private notes" }), {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        });
       }
       userId = user.id;
     }
 
     const query = travelNoteQuerySchema.parse({
       ...params,
-      isPublic: showPublicOnly
+      isPublic: showPublicOnly,
     });
 
     const service = new TravelNoteService(locals.supabase);
@@ -42,37 +42,37 @@ export const GET: APIRoute = async ({ request, locals }) => {
     return new Response(JSON.stringify(response), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json'
-      }
+        "Content-Type": "application/json",
+      },
     });
   } catch (error) {
-    console.error('List travel notes error:', error);
+    console.error("List travel notes error:", error);
 
     if (error instanceof z.ZodError) {
       return new Response(
         JSON.stringify({
-          error: 'Invalid query parameters',
-          details: error.errors
+          error: "Invalid query parameters",
+          details: error.errors,
         }),
         {
           status: 400,
           headers: {
-            'Content-Type': 'application/json'
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
     }
 
     return new Response(
       JSON.stringify({
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error'
+        error: "Internal server error",
+        message: error instanceof Error ? error.message : "Unknown error",
       }),
       {
         status: 500,
         headers: {
-          'Content-Type': 'application/json'
-        }
+          "Content-Type": "application/json",
+        },
       }
     );
   }
@@ -88,16 +88,15 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     }
 
     const body = await request.json();
-    
+
     const validatedData = createTravelNoteSchema.parse(body);
 
-    
     const service = new TravelNoteService(locals.supabase);
     const note = await service.createTravelNote(validatedData);
 
     // Check if client wants redirect or JSON response
-    const wantsRedirect = request.headers.get('X-Handle-Redirect') === 'true';
-    
+    const wantsRedirect = request.headers.get("X-Handle-Redirect") === "true";
+
     if (wantsRedirect) {
       return redirect(`/travel-notes/${note.id}`);
     }
@@ -114,4 +113,4 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
       { status: 500 }
     );
   }
-}; 
+};

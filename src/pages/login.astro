@@ -1,7 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import { createSupabaseServerInstance } from '@/db/supabase';
-import LoginForm from '@/components/LoginForm';
+import Layout from "../layouts/Layout.astro";
+import { createSupabaseServerInstance } from "@/db/supabase";
+import LoginForm from "@/components/LoginForm";
 
 // Create server-side Supabase client
 const supabase = createSupabaseServerInstance({
@@ -17,7 +17,7 @@ const {
 
 // Redirect authenticated users
 if (user && !authError) {
-  return Astro.redirect('/', 302);
+  return Astro.redirect("/", 302);
 }
 
 // Set page metadata
@@ -25,11 +25,7 @@ const title = "Logowanie | VibeTravels";
 ---
 
 <Layout title={title}>
-  <main 
-    class="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center"
-    transition:animate="slide"
-  >
-      <LoginForm client:load redirectTo="/" />
-    </div>
+  <main class="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center" transition:animate="slide">
+    <LoginForm client:load redirectTo="/" />
   </main>
 </Layout>

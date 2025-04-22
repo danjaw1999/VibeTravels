@@ -1,7 +1,9 @@
 # API Endpoint Implementation Plan: Travel Note Attractions Management
 
 ## 1. Endpoint Overview
+
 Implementation of two endpoints for managing attractions within travel notes:
+
 1. Bulk addition of attractions to a travel note
 2. Removal of a single attraction from a travel note
 
@@ -10,31 +12,34 @@ Both endpoints require authentication and proper authorization checks to ensure 
 ## 2. Request Details
 
 ### Add Attractions
+
 - Method: POST
 - URL: `/api/travel-notes/:id/attractions`
 - Parameters:
   - Required: `id` (travel note UUID in URL)
   - Body: `AttractionBulkCreateCommand`
+
 ```typescript
 {
   attractions: Array<{
-    name: string,
-    description: string,
-    image?: string,
-    image_photographer?: string,
-    image_photographer_url?: string,
-    image_source?: string,
-    latitude: number,
-    longitude: number
-  }>
+    name: string;
+    description: string;
+    image?: string;
+    image_photographer?: string;
+    image_photographer_url?: string;
+    image_source?: string;
+    latitude: number;
+    longitude: number;
+  }>;
 }
 ```
 
 ### Delete Attraction
+
 - Method: DELETE
 - URL: `/api/travel-notes/:noteId/attractions/:id`
 - Parameters:
-  - Required: 
+  - Required:
     - `noteId` (travel note UUID in URL)
     - `id` (attraction UUID in URL)
 
@@ -76,6 +81,7 @@ interface AttractionDTO {
 ## 4. Data Flow
 
 ### Add Attractions
+
 1. Middleware authenticates request
 2. Validate travel note existence and ownership
 3. Validate attraction data
@@ -83,6 +89,7 @@ interface AttractionDTO {
 5. Return created attractions
 
 ### Delete Attraction
+
 1. Middleware authenticates request
 2. Validate travel note existence and ownership
 3. Validate attraction existence
@@ -92,11 +99,13 @@ interface AttractionDTO {
 ## 5. Security Considerations
 
 ### Authentication & Authorization
+
 - Use Supabase middleware for authentication
 - Verify user ownership of travel note
 - Implement RLS policies for attractions table
 
 ### Input Validation
+
 - Sanitize all string inputs
 - Validate coordinate ranges:
   - Latitude: -90 to 90
@@ -105,12 +114,14 @@ interface AttractionDTO {
 - Implement request size limits
 
 ### Rate Limiting
+
 - Implement rate limiting per user
 - Set reasonable limits for bulk creation
 
 ## 6. Error Handling
 
 ### HTTP Status Codes
+
 - 201: Successful creation
 - 204: Successful deletion
 - 400: Invalid input data
@@ -130,6 +141,7 @@ interface AttractionDTO {
   - Unexpected errors
 
 ### Error Response Format
+
 ```typescript
 interface APIErrorResponse {
   message: string;
@@ -140,6 +152,7 @@ interface APIErrorResponse {
 ## 7. Performance Considerations
 
 ### Database Operations
+
 - Use bulk insert for attractions
 - Implement proper indexes:
   - travel_note_id
@@ -147,34 +160,34 @@ interface APIErrorResponse {
 - Consider pagination for large datasets
 
 ### Caching
+
 - Cache travel note ownership checks
 - Cache frequently accessed attractions
 
 ## 8. Implementation Steps
 
 ### 1. Database Setup
+
 1. Verify indexes on attractions table
 2. Implement RLS policies
 3. Create database functions for bulk operations
 
 ### 2. Service Layer
+
 1. Create/update TravelNoteService
+
 ```typescript
 class TravelNoteService {
-  async addAttractions(
-    noteId: string,
-    attractions: CreateAttractionCommand[]
-  ): Promise<AttractionDTO[]>;
-  
-  async removeAttraction(
-    noteId: string,
-    attractionId: string
-  ): Promise<void>;
+  async addAttractions(noteId: string, attractions: CreateAttractionCommand[]): Promise<AttractionDTO[]>;
+
+  async removeAttraction(noteId: string, attractionId: string): Promise<void>;
 }
 ```
 
 ### 3. Validation Layer
+
 1. Create validation schemas
+
 ```typescript
 const createAttractionSchema = {
   name: string().required(),
@@ -187,7 +200,9 @@ const createAttractionSchema = {
 ```
 
 ### 4. API Endpoints
+
 1. Create POST endpoint
+
 ```typescript
 export const POST: APIRoute = async ({ params, request, locals }) => {
   const { id } = params;
@@ -197,6 +212,7 @@ export const POST: APIRoute = async ({ params, request, locals }) => {
 ```
 
 2. Create DELETE endpoint
+
 ```typescript
 export const DELETE: APIRoute = async ({ params, locals }) => {
   const { noteId, id } = params;
@@ -205,21 +221,25 @@ export const DELETE: APIRoute = async ({ params, locals }) => {
 ```
 
 ### 5. Error Handling
+
 1. Implement custom error types
 2. Add error logging
 3. Create error response helpers
 
 ### 6. Testing
+
 1. Unit tests for validation
 2. Integration tests for endpoints
 3. Performance tests for bulk operations
 
 ### 7. Documentation
+
 1. Update API documentation
 2. Add JSDoc comments
 3. Update README.md
 
 ### 8. Deployment
+
 1. Review database migrations
 2. Deploy to staging
 3. Conduct security review

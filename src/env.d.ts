@@ -1,7 +1,7 @@
 /// <reference types="astro/client" />
 
-import type { User } from '@supabase/supabase-js';
-import type { SupabaseClient } from './db/supabase';
+import type { User } from "@supabase/supabase-js";
+import type { SupabaseClient } from "./db/supabase";
 
 declare namespace App {
   interface Locals {
@@ -29,7 +29,7 @@ type AnimationValue = {
   easing?: string;
 };
 
-declare module 'astro:transitions' {
+declare module "astro:transitions" {
   interface TransitionAnimationValue {
     old: AnimationValue;
     new: AnimationValue;

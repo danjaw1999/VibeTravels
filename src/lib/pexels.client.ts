@@ -1,7 +1,7 @@
-import { createClient, type Photo, type PhotosWithTotalResults, type ErrorResponse } from 'pexels';
+import { createClient, type Photo, type PhotosWithTotalResults, type ErrorResponse } from "pexels";
 
 // Pexels API key should be in your .env file
-const PEXELS_API_KEY = import.meta.env.PEXELS_API_KEY || 'your_pexels_api_key';
+const PEXELS_API_KEY = import.meta.env.PEXELS_API_KEY || "your_pexels_api_key";
 
 export const pexels = createClient(PEXELS_API_KEY);
 
@@ -29,17 +29,17 @@ function canMakeRequest(): boolean {
 export async function searchAttractionImage(query: string): Promise<PexelsImage | null> {
   try {
     if (!canMakeRequest()) {
-      console.warn('Pexels API rate limit reached, skipping image search');
+      console.warn("Pexels API rate limit reached, skipping image search");
       return null;
     }
 
     requestTimes.push(Date.now());
 
-    const searchResult = await pexels.photos.search({
+    const searchResult = (await pexels.photos.search({
       query,
       per_page: 1,
-      orientation: 'landscape'
-    }) as PhotosWithTotalResults;
+      orientation: "landscape",
+    })) as PhotosWithTotalResults;
 
     if (searchResult.photos && searchResult.photos.length > 0) {
       const photo = searchResult.photos[0];
@@ -47,13 +47,13 @@ export async function searchAttractionImage(query: string): Promise<PexelsImage 
         url: photo.src.large2x,
         photographer: photo.photographer,
         photographerUrl: photo.photographer_url,
-        source: `https://www.pexels.com/photo/${photo.id}`
+        source: `https://www.pexels.com/photo/${photo.id}`,
       };
     }
 
     return null;
   } catch (error) {
-    console.error('Failed to fetch image from Pexels:', error);
+    console.error("Failed to fetch image from Pexels:", error);
     return null;
   }
-} 
+}

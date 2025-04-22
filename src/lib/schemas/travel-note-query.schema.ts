@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const travelNoteQuerySchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -9,6 +9,6 @@ export const travelNoteQuerySchema = z.object({
   fromDate: z.string().datetime().optional(),
   toDate: z.string().datetime().optional(),
   rating: z.coerce.number().min(1).max(5).optional(),
-  sortBy: z.enum(['created_at', 'rating', 'visit_date']).optional(),
-  sortOrder: z.enum(['asc', 'desc']).optional(),
-}); 
+  sortBy: z.enum(["created_at", "rating", "visit_date"]).optional(),
+  sortOrder: z.enum(["asc", "desc"]).optional(),
+});

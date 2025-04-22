@@ -1,13 +1,12 @@
-import { createSupabaseServerInstance } from '@/db/supabase';
-import type { APIRoute } from 'astro';
+import { createSupabaseServerInstance } from "@/db/supabase";
+import type { APIRoute } from "astro";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-
   try {
     const { email, password } = await request.json();
 
     if (!email || !password) {
-      return new Response(JSON.stringify({ error: 'Email and password are required' }), {
+      return new Response(JSON.stringify({ error: "Email and password are required" }), {
         status: 400,
       });
     }
@@ -25,7 +24,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     return new Response(JSON.stringify({ user: data.user }), { status: 200 });
   } catch (err) {
-    console.error('Login error:', err);
-    return new Response(JSON.stringify({ error: 'An unexpected error occurred' }), { status: 500 });
+    console.error("Login error:", err);
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), { status: 500 });
   }
 };

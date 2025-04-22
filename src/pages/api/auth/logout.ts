@@ -1,4 +1,4 @@
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
 export const POST: APIRoute = async ({ locals }) => {
   try {
@@ -14,8 +14,8 @@ export const POST: APIRoute = async ({ locals }) => {
       status: 200,
     });
   } catch (err) {
-    console.error('Logout error:', err);
-    return new Response(JSON.stringify({ error: 'An unexpected error occurred' }), {
+    console.error("Logout error:", err);
+    return new Response(JSON.stringify({ error: "An unexpected error occurred" }), {
       status: 500,
     });
   }

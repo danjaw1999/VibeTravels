@@ -15,14 +15,14 @@ export default defineConfig({
     plugins: [tailwindcss()],
     resolve: {
       alias: {
-        '@': '/src',
-        '@components': '/src/components',
-        '@layouts': '/src/layouts',
-        '@lib': '/src/lib',
-        '@assets': '/src/assets',
-        '@db': '/src/db'
-      }
-    }
+        "@": "/src",
+        "@components": "/src/components",
+        "@layouts": "/src/layouts",
+        "@lib": "/src/lib",
+        "@assets": "/src/assets",
+        "@db": "/src/db",
+      },
+    },
   },
   adapter: node({
     mode: "standalone",

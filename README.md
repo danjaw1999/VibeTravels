@@ -1,14 +1,17 @@
 # VibeTravels (MVP)
 
 ## 1. Project Name
+
 VibeTravels (MVP)
 
 ## 2. Project Description
+
 VibeTravels is a travel planning application that leverages AI to transform simple travel notes into detailed itineraries. The app enables users to create, manage, and review travel notes, maintain a basic user profile with travel preferences, and generate personalized recommendations for attractions in a selected destination. An integral feature is the integration of AI, which converts user-input destinations and descriptions into a list of attractions complete with details and Google Maps links.
 
 ## 3. Tech Stack
 
 **Frontend**
+
 - Astro 5: For building fast and efficient web pages with minimal JavaScript.
 - React 19: Provides interactivity for dynamic components.
 - TypeScript 5: Enables static typing and improved IDE support.
@@ -16,12 +19,15 @@ VibeTravels is a travel planning application that leverages AI to transform simp
 - Shadcn/ui: A React component library for UI elements.
 
 **Backend**
+
 - Supabase: A comprehensive Backend-as-a-Service offering a PostgreSQL database, SDKs in various languages, and built-in user authentication.
 
 **AI**
+
 - Openrouter.ai: Integrates with multiple AI models (OpenAI, Anthropic, Google, etc.) to provide efficient and cost-effective AI services with configurable API key limits.
 
 **Testing**
+
 - Vitest: Fast testing framework native to Vite for unit and integration tests.
 - React Testing Library: Component testing with a focus on user behavior.
 - MSW (Mock Service Worker): API mocking at network level for realistic tests.
@@ -32,16 +38,19 @@ VibeTravels is a travel planning application that leverages AI to transform simp
 - Biome: Fast linting and formatting.
 
 **CI/CD & Hosting**
+
 - GitHub Actions: For constructing CI/CD pipelines.
 - DigitalOcean: Hosts the application using Docker images.
 
 ## 4. Getting Started Locally
 
 ### Prerequisites
+
 - Node.js (version specified in `.nvmrc`: 22.14.0)
 - npm or yarn package manager
 
 ### Installation
+
 1. Clone the repository:
    ```bash
    git clone <repository-url>
@@ -55,12 +64,15 @@ VibeTravels is a travel planning application that leverages AI to transform simp
    ```
 
 ### Running the Development Server
+
 Start the development server with:
+
 ```bash
 npm run dev
 # or
 yarn dev
 ```
+
 Access the application at [http://localhost:3000](http://localhost:3000) (or the port specified by Astro).
 
 ## 5. Available Scripts
@@ -75,6 +87,7 @@ Access the application at [http://localhost:3000](http://localhost:3000) (or the
 ## 6. Project Scope
 
 **Included:**
+
 - CRUD operations for managing travel notes.
 - Listing and searching itineraries and attractions.
 - User registration and login to associate notes with user accounts.
@@ -83,6 +96,7 @@ Access the application at [http://localhost:3000](http://localhost:3000) (or the
 - A separate endpoint for adding selected attractions to an itinerary.
 
 **Excluded:**
+
 - Sharing travel plans between users.
 - Advanced multimedia handling (e.g., in-depth image analysis).
 - Advanced trip scheduling and logistics planning.
@@ -113,10 +127,8 @@ const response = await fetch(`/api/travel-notes/${noteId}/attractions/generate?l
 const { suggestions } = await response.json();
 
 // Get suggestions excluding certain attractions
-const excludeList = ['Eiffel Tower', 'Louvre'].join(',');
-const response = await fetch(
-  `/api/travel-notes/${noteId}/attractions/generate?exclude=${excludeList}`
-);
+const excludeList = ["Eiffel Tower", "Louvre"].join(",");
+const response = await fetch(`/api/travel-notes/${noteId}/attractions/generate?exclude=${excludeList}`);
 const { suggestions } = await response.json();
 ```
 
@@ -126,25 +138,25 @@ const { suggestions } = await response.json();
 // Add multiple attractions to a travel note
 const attractions = [
   {
-    name: 'Eiffel Tower',
-    description: 'Iconic iron lattice tower on the Champ de Mars',
+    name: "Eiffel Tower",
+    description: "Iconic iron lattice tower on the Champ de Mars",
     latitude: 48.8584,
-    longitude: 2.2945
+    longitude: 2.2945,
   },
   {
-    name: 'Louvre Museum',
-    description: 'World\'s largest art museum and historic monument',
+    name: "Louvre Museum",
+    description: "World's largest art museum and historic monument",
     latitude: 48.8606,
-    longitude: 2.3376
-  }
+    longitude: 2.3376,
+  },
 ];
 
 const response = await fetch(`/api/travel-notes/${noteId}/attractions`, {
-  method: 'POST',
+  method: "POST",
   headers: {
-    'Content-Type': 'application/json'
+    "Content-Type": "application/json",
   },
-  body: JSON.stringify({ attractions })
+  body: JSON.stringify({ attractions }),
 });
 
 const { attractions: createdAttractions } = await response.json();
@@ -209,6 +221,7 @@ npm run test:a11y
 ```
 
 Our testing philosophy follows these principles:
+
 - Unit and integration tests with Vitest and React Testing Library
 - Realistic API mocking with MSW
 - End-to-end workflows with Playwright
@@ -220,22 +233,28 @@ Our testing philosophy follows these principles:
 ### Travel Notes
 
 #### GET /api/travel-notes/:id
+
 Pobiera szczegóły notatki podróży o podanym ID.
 
 **Parametry URL:**
+
 - `id` (UUID) - ID notatki podróży
 
 **Odpowiedź:**
+
 - Status: 200 OK
 - Body: TravelNoteDTO (szczegóły w dokumentacji Swagger)
 
 #### PATCH /api/travel-notes/:id
+
 Aktualizuje notatkę podróży o podanym ID.
 
 **Parametry URL:**
+
 - `id` (UUID) - ID notatki podróży
 
 **Body:**
+
 ```json
 {
   "name": "string",       // opcjonalne, min 1 znak, max 255 znaków
@@ -245,16 +264,20 @@ Aktualizuje notatkę podróży o podanym ID.
 ```
 
 **Odpowiedź:**
+
 - Status: 200 OK
 - Body: Zaktualizowany TravelNoteDTO
 
 #### DELETE /api/travel-notes/:id
+
 Usuwa notatkę podróży o podanym ID.
 
 **Parametry URL:**
+
 - `id` (UUID) - ID notatki podróży
 
 **Odpowiedź:**
+
 - Status: 204 No Content
 
 ### Dokumentacja API
@@ -264,10 +287,13 @@ Pełna dokumentacja API jest dostępna w formacie Swagger pod adresem `/api/swag
 # VibeTravels API Documentation
 
 ## Overview
+
 VibeTravels API provides endpoints for managing travel notes and their attractions. The API uses Supabase for authentication and data storage.
 
 ## Authentication
+
 All endpoints require authentication using a Supabase JWT token. Include the token in the `Authorization` header:
+
 ```
 Authorization: Bearer <your_token>
 ```
@@ -277,11 +303,13 @@ Authorization: Bearer <your_token>
 ### Travel Notes
 
 #### Create Travel Note
+
 ```http
 POST /api/travel-notes
 ```
 
 Request body:
+
 ```json
 {
   "name": "string",
@@ -291,6 +319,7 @@ Request body:
 ```
 
 Response:
+
 ```json
 {
   "data": {
@@ -307,11 +336,13 @@ Response:
 ```
 
 #### List Travel Notes
+
 ```http
 GET /api/travel-notes
 ```
 
 Query parameters:
+
 - `page` (number, default: 1)
 - `limit` (number, default: 10)
 - `location` (string, optional)
@@ -320,6 +351,7 @@ Query parameters:
 - `sortOrder` ("asc" | "desc", optional)
 
 Response:
+
 ```json
 {
   "data": [
@@ -339,11 +371,13 @@ Response:
 ```
 
 #### Get Travel Note
+
 ```http
 GET /api/travel-notes/:id
 ```
 
 Response:
+
 ```json
 {
   "data": {
@@ -360,11 +394,13 @@ Response:
 ```
 
 #### Update Travel Note
+
 ```http
 PUT /api/travel-notes/:id
 ```
 
 Request body:
+
 ```json
 {
   "name": "string (optional)",
@@ -376,6 +412,7 @@ Request body:
 Response: Same as Get Travel Note
 
 #### Delete Travel Note
+
 ```http
 DELETE /api/travel-notes/:id
 ```
@@ -385,11 +422,13 @@ Response: 204 No Content
 ### Attractions
 
 #### Add Attractions to Note
+
 ```http
 POST /api/travel-notes/:id/attractions
 ```
 
 Request body:
+
 ```json
 {
   "attractions": [
@@ -408,6 +447,7 @@ Request body:
 ```
 
 Response:
+
 ```json
 {
   "data": {
@@ -432,6 +472,7 @@ Response:
 ```
 
 #### Remove Attraction from Note
+
 ```http
 DELETE /api/travel-notes/:noteId/attractions/:id
 ```
@@ -441,6 +482,7 @@ Response: 204 No Content
 ## Error Responses
 
 All error responses follow this format:
+
 ```json
 {
   "message": "string",
@@ -449,6 +491,7 @@ All error responses follow this format:
 ```
 
 Common error codes:
+
 - 400: Invalid input data
 - 401: Unauthorized
 - 403: Access denied
@@ -458,6 +501,7 @@ Common error codes:
 ## Rate Limiting
 
 The API implements rate limiting per user:
+
 - Bulk attraction creation: 50 attractions per request
 - Maximum 100 requests per minute per user
 

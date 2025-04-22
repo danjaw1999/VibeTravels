@@ -41,9 +41,9 @@ components:
         attractions:
           type: array
           items:
-            $ref: '#/components/schemas/AttractionDTO'
+            $ref: "#/components/schemas/AttractionDTO"
           description: List of attractions in this travel note
-    
+
     AttractionDTO:
       type: object
       properties:
@@ -130,7 +130,7 @@ paths:
             default: true
           description: Whether to include attractions in the response
       responses:
-        '200':
+        "200":
           description: Successfully retrieved travel notes
           content:
             application/json:
@@ -140,7 +140,7 @@ paths:
                   items:
                     type: array
                     items:
-                      $ref: '#/components/schemas/TravelNoteDTO'
+                      $ref: "#/components/schemas/TravelNoteDTO"
                   total:
                     type: integer
                     description: Total number of matching notes
@@ -150,18 +150,18 @@ paths:
                   limit:
                     type: integer
                     description: Number of items per page
-        '400':
+        "400":
           description: Invalid query parameters
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-        '500':
+                $ref: "#/components/schemas/Error"
+        "500":
           description: Internal server error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
       security:
         - supabaseAuth: []
 
@@ -170,4 +170,4 @@ paths:
         type: http
         scheme: bearer
         bearerFormat: JWT
-        description: Supabase JWT token 
+        description: Supabase JWT token

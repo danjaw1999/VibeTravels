@@ -1,7 +1,13 @@
 @layer animations {
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .animate-fade-in {
@@ -14,31 +20,50 @@
     animation: fade-in 0.5s ease-out forwards;
   }
 
-  .animate-fade-in > *:nth-child(1) { animation-delay: 0.1s; }
-  .animate-fade-in > *:nth-child(2) { animation-delay: 0.2s; }
-  .animate-fade-in > *:nth-child(3) { animation-delay: 0.3s; }
-  .animate-fade-in > *:nth-child(4) { animation-delay: 0.4s; }
-  .animate-fade-in > *:nth-child(5) { animation-delay: 0.5s; }
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+  .animate-fade-in > *:nth-child(1) {
+    animation-delay: 0.1s;
   }
-  
+  .animate-fade-in > *:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  .animate-fade-in > *:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+  .animate-fade-in > *:nth-child(4) {
+    animation-delay: 0.4s;
+  }
+  .animate-fade-in > *:nth-child(5) {
+    animation-delay: 0.5s;
+  }
+
+  @keyframes pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+
   .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
   }
-  
+
   @keyframes loading-bar {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
-  
+
   .skeleton-loading-bar {
     position: relative;
     overflow: hidden;
   }
-  
+
   .skeleton-loading-bar::after {
     content: "";
     position: absolute;
@@ -49,14 +74,20 @@
     background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
     animation: loading-bar 1.5s infinite;
   }
-  
+
   /* Slide animation for page transitions */
   @keyframes slide-in {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
+    from {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
   }
-  
+
   .animate-slide {
     animation: slide-in 0.3s ease-out forwards;
   }
-} 
+}

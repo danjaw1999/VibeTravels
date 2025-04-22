@@ -1,13 +1,13 @@
-import { expect, vi, afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { expect, vi, afterEach } from "vitest";
+import { cleanup } from "@testing-library/react";
+import "@testing-library/jest-dom";
 
 // Extend Vitest with additional matchers if needed
 // Example: extend with custom matchers
 
 // Set up global mocks here
 // Example: mocking global objects like localStorage
-vi.stubGlobal('localStorage', {
+vi.stubGlobal("localStorage", {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
@@ -31,4 +31,4 @@ export function createMockResponse(data: unknown) {
     status: 200,
     headers: new Headers(),
   };
-} 
+}

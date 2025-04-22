@@ -1,5 +1,5 @@
-import { expect } from '@playwright/test';
-import type { Page, Locator } from '@playwright/test';
+import { expect } from "@playwright/test";
+import type { Page, Locator } from "@playwright/test";
 
 export class HomePage {
   readonly page: Page;
@@ -10,14 +10,14 @@ export class HomePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByTestId('welcome-message');
-    this.loginLink = page.getByRole('link', { name: 'Login' });
-    this.createNoteButton = page.getByRole('link', { name: /Create Note/i });
-    this.browseNotesButton = page.getByRole('link', { name: /Browse Notes/i });
+    this.heading = page.getByTestId("welcome-message");
+    this.loginLink = page.getByRole("link", { name: "Login" });
+    this.createNoteButton = page.getByRole("link", { name: /Create Note/i });
+    this.browseNotesButton = page.getByRole("link", { name: /Browse Notes/i });
   }
 
   async goto() {
-    await this.page.goto('/');
+    await this.page.goto("/");
   }
 
   async expectPageLoaded() {
@@ -40,4 +40,4 @@ export class HomePage {
   async takeScreenshot(name: string) {
     await this.page.screenshot({ path: `./playwright/screenshots/${name}.png` });
   }
-} 
+}

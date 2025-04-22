@@ -7,6 +7,7 @@ This guide explains how authentication is implemented in the VibeTravels applica
 The application uses Supabase for authentication with a dual-mode approach:
 
 1. **Server-side Authentication**: Uses HTTP cookies for persistent sessions
+
    - Secure, httpOnly cookies store authentication tokens
    - Used by Astro pages and API endpoints via middleware
 
@@ -85,13 +86,13 @@ If cookies and localStorage are out of sync:
 
 ```typescript
 // In browser console:
-await fetch('/api/auth/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
+await fetch("/api/auth/login", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    email: 'your-email@example.com',
-    password: 'your-password'
-  })
+    email: "your-email@example.com",
+    password: "your-password",
+  }),
 });
 ```
 
@@ -99,4 +100,4 @@ await fetch('/api/auth/login', {
 
 - Cookies use `httpOnly` to prevent JavaScript access
 - Both client and server authentication methods use the same underlying Supabase mechanisms
-- Critical operations have server-side validation 
+- Critical operations have server-side validation

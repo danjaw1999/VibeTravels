@@ -1,6 +1,6 @@
-import { authService } from '@/lib/services/auth';
-import type { LoginFormData, SignupFormData } from '@/lib/types/auth';
-import { useState } from 'react';
+import { authService } from "@/lib/services/auth";
+import type { LoginFormData, SignupFormData } from "@/lib/types/auth";
+import { useState } from "react";
 
 interface User {
   id: string;
@@ -19,7 +19,7 @@ export const useAuth = () => {
       setIsLoading(false);
       return result;
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'An unexpected error occurred';
+      const message = err instanceof Error ? err.message : "An unexpected error occurred";
       setError(message);
       setIsLoading(false);
       throw err;

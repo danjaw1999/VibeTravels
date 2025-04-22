@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Locator, Page } from "@playwright/test";
 
 export class LoginPage {
   readonly page: Page;
@@ -20,7 +20,7 @@ export class LoginPage {
    * Navigate to the login page
    */
   async goto() {
-    await this.page.goto('/login');
+    await this.page.goto("/login");
     // Wait for the page to be fully loaded
     await this.page.waitForSelector('input[type="email"]', { timeout: 10000 });
   }
@@ -41,6 +41,6 @@ export class LoginPage {
    */
   async verifySuccessfulLogin() {
     // Wait for the URL to change from /login
-    await this.page.waitForURL(url => !url.pathname.includes('/login'), { timeout: 10000 });
+    await this.page.waitForURL((url) => !url.pathname.includes("/login"), { timeout: 10000 });
   }
-} 
+}

@@ -32,9 +32,7 @@ export function useTravelNotes() {
       return note;
     } catch (err) {
       console.error("API call failed:", err);
-      setError(
-        err instanceof Error ? err.message : "Failed to create travel note"
-      );
+      setError(err instanceof Error ? err.message : "Failed to create travel note");
       return null;
     } finally {
       setIsLoading(false);
@@ -46,4 +44,4 @@ export function useTravelNotes() {
     isLoading,
     error,
   };
-} 
+}

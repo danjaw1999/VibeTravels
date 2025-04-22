@@ -7,39 +7,39 @@
 
 // The layer type corresponds to each major section of the application
 export type LayerType =
-  | 'craftsmanship' // Orange
-  | 'frontend' // Blue
-  | 'backend' // Green
-  | 'database' // Indigo
-  | 'devops' // Fuchsia
-  | 'testing'; // Yellow
+  | "craftsmanship" // Orange
+  | "frontend" // Blue
+  | "backend" // Green
+  | "database" // Indigo
+  | "devops" // Fuchsia
+  | "testing"; // Yellow
 
 // Direct mapping to Tailwind color names
 const layerColors: Record<LayerType, string> = {
-  craftsmanship: 'orange',
-  frontend: 'blue',
-  backend: 'green',
-  database: 'indigo',
-  devops: 'fuchsia',
-  testing: 'yellow',
+  craftsmanship: "orange",
+  frontend: "blue",
+  backend: "green",
+  database: "indigo",
+  devops: "fuchsia",
+  testing: "yellow",
 };
 
 // Theme transition settings for consistent animations
 export const transitions = {
   duration: {
-    fast: '150ms',
-    medium: '200ms',
-    slow: '300ms',
+    fast: "150ms",
+    medium: "200ms",
+    slow: "300ms",
   },
   timing: {
-    default: 'ease-in-out',
-    bounce: 'cubic-bezier(0.4, 0, 0.2, 1)',
-    smooth: 'ease',
+    default: "ease-in-out",
+    bounce: "cubic-bezier(0.4, 0, 0.2, 1)",
+    smooth: "ease",
   },
   delay: {
-    none: '0ms',
-    short: '50ms',
-    medium: '100ms',
+    none: "0ms",
+    short: "50ms",
+    medium: "100ms",
   },
 };
 
@@ -48,11 +48,9 @@ export const getLayerClasses = {
   container: (layerType: LayerType, isSelected: boolean, isExpanded: boolean = false): string => {
     return isSelected
       ? `bg-gray-800/70 border-${layerColors[layerType]}-400 border shadow-md ${
-          !isExpanded ? 'hover:bg-gray-700/70' : ''
+          !isExpanded ? "hover:bg-gray-700/70" : ""
         }`
-      : `bg-gray-800/70 ${
-          !isExpanded ? 'hover:bg-gray-700/70' : ''
-        } border border-transparent hover:shadow-sm`;
+      : `bg-gray-800/70 ${!isExpanded ? "hover:bg-gray-700/70" : ""} border border-transparent hover:shadow-sm`;
   },
 
   badge: (layerType: LayerType): string => {
@@ -62,11 +60,9 @@ export const getLayerClasses = {
   stackContainer: (layerType: LayerType, isSelected: boolean, isExpanded = false): string => {
     return isSelected
       ? `bg-gray-700/40 border-${layerColors[layerType]}-300 border shadow-md ${
-          !isExpanded ? 'hover:bg-gray-600/60' : ''
+          !isExpanded ? "hover:bg-gray-600/60" : ""
         }`
-      : `bg-gray-700/60 ${
-          !isExpanded ? 'hover:bg-gray-600/60' : ''
-        } border border-transparent hover:shadow-sm`;
+      : `bg-gray-700/60 ${!isExpanded ? "hover:bg-gray-600/60" : ""} border border-transparent hover:shadow-sm`;
   },
 
   libraryItem: (layerType: LayerType, isSelected: boolean): string => {
@@ -75,23 +71,17 @@ export const getLayerClasses = {
       : `bg-gray-600/50 hover:bg-gray-500/50 border border-transparent hover:shadow-sm box-border`;
   },
 
-  toggleSwitch: (
-    layerType: LayerType,
-    isSelected: boolean,
-  ): { borderColor: string; backgroundColor: string } => {
+  toggleSwitch: (layerType: LayerType, isSelected: boolean): { borderColor: string; backgroundColor: string } => {
     return {
-      borderColor: isSelected ? `var(--tw-${layerColors[layerType]}-400)` : 'transparent',
-      backgroundColor: isSelected ? `var(--tw-${layerColors[layerType]}-100)` : '#374151',
+      borderColor: isSelected ? `var(--tw-${layerColors[layerType]}-400)` : "transparent",
+      backgroundColor: isSelected ? `var(--tw-${layerColors[layerType]}-100)` : "#374151",
     };
   },
 
-  toggleHandle: (
-    layerType: LayerType,
-    isSelected: boolean,
-  ): { backgroundColor: string; transform: string } => {
+  toggleHandle: (layerType: LayerType, isSelected: boolean): { backgroundColor: string; transform: string } => {
     return {
-      backgroundColor: isSelected ? `var(--tw-${layerColors[layerType]}-400)` : '#D1D5DB',
-      transform: isSelected ? 'translateX(16px)' : 'translateX(0)',
+      backgroundColor: isSelected ? `var(--tw-${layerColors[layerType]}-400)` : "#D1D5DB",
+      transform: isSelected ? "translateX(16px)" : "translateX(0)",
     };
   },
 
@@ -109,23 +99,23 @@ export const getLayerClasses = {
 };
 
 // For backward compatibility with any remaining code
-    import { Layer } from '@/data/dictionaries';
+import { Layer } from "@/data/dictionaries";
 
 export const layerToType = (layer: Layer): LayerType => {
   switch (layer) {
     case Layer.CODING_PRACTICES:
-      return 'craftsmanship';
+      return "craftsmanship";
     case Layer.FRONTEND:
-      return 'frontend';
+      return "frontend";
     case Layer.BACKEND:
-      return 'backend';
+      return "backend";
     case Layer.DATABASE:
-      return 'database';
+      return "database";
     case Layer.DEVOPS:
-      return 'devops';
+      return "devops";
     case Layer.TESTING:
-      return 'testing';
+      return "testing";
     default:
-      return 'craftsmanship';
+      return "craftsmanship";
   }
 };

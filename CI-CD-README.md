@@ -5,6 +5,7 @@ Ten dokument opisuje konfigurację CI/CD dla projektu VibeTravels, wykorzystują
 ## Przegląd
 
 Konfiguracja zawiera następujące etapy:
+
 1. **Setup** - pobranie kodu i odczytanie wersji Node.js z pliku `.nvmrc`
 2. **Test** - uruchomienie linterów, testów jednostkowych i E2E
 3. **Build** - zbudowanie aplikacji produkcyjnej
@@ -28,6 +29,7 @@ W swoim repozytorium GitHub dodaj następujące sekrety:
 ## Uruchamianie workflow
 
 Workflow uruchamia się automatycznie:
+
 - Po każdym push do gałęzi `main`
 - Przy każdym pull request do gałęzi `main`
 
@@ -46,7 +48,7 @@ setup:
   steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Read .nvmrc
       id: nvmrc
       run: echo "node-version=$(cat .nvmrc)" >> $GITHUB_OUTPUT
@@ -62,28 +64,28 @@ test:
   steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ needs.setup.outputs.node-version }}
-        cache: 'npm'
-    
+        cache: "npm"
+
     - name: Install dependencies
       run: npm ci
-    
+
     - name: Run linting
       run: npm run lint
-    
+
     - name: Run unit tests
       run: npm test
       env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-    
+
     - name: Install Playwright browsers
       run: npx playwright install --with-deps chromium
-    
+
     - name: Run E2E tests
       run: npm run test:e2e
       env:
@@ -103,22 +105,22 @@ build:
   steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ needs.setup.outputs.node-version }}
-        cache: 'npm'
-    
+        cache: "npm"
+
     - name: Install dependencies
       run: npm ci
-    
+
     - name: Build
       run: npm run build
       env:
         SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
         SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-    
+
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -138,22 +140,22 @@ deploy:
   steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
+
     - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
         name: build
         path: dist
-    
+
     - name: Setup Docker Buildx
       uses: docker/setup-buildx-action@v3
-    
+
     - name: Login to Docker Hub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_PASSWORD }}
-    
+
     - name: Build and push Docker image
       uses: docker/build-push-action@v6
       with:
@@ -162,7 +164,7 @@ deploy:
         tags: ${{ secrets.DOCKER_USERNAME }}/vibetravels:latest
         cache-from: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/vibetravels:buildcache
         cache-to: type=registry,ref=${{ secrets.DOCKER_USERNAME }}/vibetravels:buildcache,mode=max
-    
+
     - name: Deploy to DigitalOcean
       uses: appleboy/ssh-action@v1
       with:
@@ -259,36 +261,36 @@ server {
 ## Konfiguracja testów E2E
 
 ```typescript
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
-  testDir: './tests/e2e',
+  testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: process.env.CI ? 'github' : 'html',
+  reporter: process.env.CI ? "github" : "html",
   use: {
-    baseURL: 'http://localhost:4321',
-    trace: 'on-first-retry',
-    screenshot: 'only-on-failure',
+    baseURL: "http://localhost:4321",
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
   },
   projects: [
     {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      name: "chromium",
+      use: { ...devices["Desktop Chrome"] },
     },
   ],
   webServer: {
-    command: 'npm run preview',
+    command: "npm run preview",
     port: 4321,
     reuseExistingServer: !process.env.CI,
     env: {
-      SUPABASE_URL: process.env.SUPABASE_URL || '',
-      SUPABASE_KEY: process.env.SUPABASE_KEY || '',
-      E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || '',
-      E2E_USERNAME: process.env.E2E_USERNAME || '',
+      SUPABASE_URL: process.env.SUPABASE_URL || "",
+      SUPABASE_KEY: process.env.SUPABASE_KEY || "",
+      E2E_USERNAME_ID: process.env.E2E_USERNAME_ID || "",
+      E2E_USERNAME: process.env.E2E_USERNAME || "",
     },
   },
 });
-``` 
+```
