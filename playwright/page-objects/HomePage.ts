@@ -10,7 +10,7 @@ export class HomePage {
 
   constructor(page: Page) {
     this.page = page;
-    this.heading = page.getByText('Welcome to VibeTravels');
+    this.heading = page.getByTestId('welcome-message');
     this.loginLink = page.getByRole('link', { name: 'Login' });
     this.createNoteButton = page.getByRole('link', { name: /Create Note/i });
     this.browseNotesButton = page.getByRole('link', { name: /Browse Notes/i });

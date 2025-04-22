@@ -1,14 +1,10 @@
 import { test as setup } from '@playwright/test';
 import { loadEnvironmentVariables, logEnvironmentVariables } from './utils/env-loader';
 
-// Załaduj zmienne środowiskowe
 loadEnvironmentVariables('auth-setup');
 
 setup('authenticate', async ({ page }) => {
-  console.log('Setting up authentication for E2E tests...');
-  
-  // Log zmiennych środowiskowych
-  logEnvironmentVariables('auth-setup');
+
   
   // Get credentials from environment variables
   const email = process.env.E2E_USERNAME;
@@ -19,9 +15,7 @@ setup('authenticate', async ({ page }) => {
     E2E_USERNAME: ${email ? 'exists' : 'missing'}
     E2E_PASSWORD: ${password ? 'exists' : 'missing'}`);
   }
-  
-  console.log(`Authenticating user: ${email}`);
-  
+    
   // Navigate to login page
   await page.goto('/login');
   
@@ -37,6 +31,5 @@ setup('authenticate', async ({ page }) => {
   
   // Store authentication state
   await page.context().storageState({ path: 'playwright/.auth/user.json' });
-  
-  console.log('Authentication completed and state saved');
+
 });

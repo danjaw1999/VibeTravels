@@ -1,4 +1,5 @@
-import { useState, useCallback, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "@/lib/schemas/auth.schema";
 import type { RegisterCommand } from "@/lib/schemas/auth.schema";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
-import { navigate } from "astro:transitions/client";
 
 interface PasswordRequirement {
 	id: string;
@@ -37,89 +37,33 @@ const passwordRequirements: PasswordRequirement[] = [
 	},
 ];
 
+// Define a specific type for the form
+type RegisterFormData = {
+	email: string;
+	password: string;
+	profileDescription?: string;
+};
+
 export const RegisterForm = () => {
 	const { signup, isLoading, error: submitError } = useAuth();
-	const [isPending, startTransition] = useTransition();
-	const [formData, setFormData] = useState<RegisterCommand>({
-		email: "",
-		password: "",
-		profileDescription: "",
+	const {
+		register,
+		handleSubmit,
+		watch,
+		formState: { errors, isSubmitting },
+	} = useForm<RegisterFormData>({
+		resolver: zodResolver(registerSchema),
+		mode: "onChange",
+		defaultValues: {
+			email: "",
+			password: "",
+			profileDescription: "",
+		},
 	});
-	const [validationErrors, setValidationErrors] = useState<
-		Record<string, string>
-	>({});
 
-	const validateField = useCallback(
-		async (name: keyof RegisterCommand, value: string) => {
-			startTransition(() => {
-				try {
-					// Dla emaila używamy tylko podstawowej walidacji synchronicznej
-					if (name === "email") {
-						if (!value) {
-							setValidationErrors((prev) => ({
-								...prev,
-								[name]: "Email jest wymagany",
-							}));
-						} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-							setValidationErrors((prev) => ({
-								...prev,
-								[name]: "Nieprawidłowy format adresu email",
-							}));
-						} else {
-							setValidationErrors((prev) => ({ ...prev, [name]: "" }));
-						}
-						return;
-					}
-
-					// Dla pozostałych pól używamy normalnej walidacji Zod
-					const fieldSchema = registerSchema.shape[name];
-					const result = fieldSchema.safeParse(value);
-
-					if (!result.success) {
-						setValidationErrors((prev) => ({
-							...prev,
-							[name]:
-								result.error.errors[0]?.message || "Nieprawidłowa wartość",
-						}));
-					} else {
-						setValidationErrors((prev) => ({ ...prev, [name]: "" }));
-					}
-				} catch (err) {
-					console.error(`Validation error for ${name}:`, err);
-					if (err instanceof Error) {
-						setValidationErrors((prev) => ({ ...prev, [name]: err.message }));
-					}
-				}
-			});
-		},
-		[],
-	);
-
-	const handleChange = useCallback(
-		(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-			const { name, value } = e.target;
-			setFormData((prev) => ({ ...prev, [name]: value }));
-			validateField(name as keyof RegisterCommand, value);
-		},
-		[validateField],
-	);
-
-	const handleSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		try {
-			// Asynchroniczna walidacja całego formularza przed wysłaniem
-			const result = await registerSchema.parseAsync(formData);
-			await signup(result);
-			navigate("/");
-		} catch (err) {
-			// Error is handled by the hook
-			console.error("Validation error:", err);
-		}
-	};
-
-	const hasErrors = Object.values(validationErrors).some(Boolean);
+	const password = watch("password", "");
 	const passwordStrength = passwordRequirements.filter((req) =>
-		req.regex.test(formData.password),
+		req.regex.test(password),
 	).length;
 
 	const getPasswordStrengthColor = () => {
@@ -128,6 +72,16 @@ export const RegisterForm = () => {
 		if (passwordStrength < 5) return "bg-yellow-500";
 		return "bg-green-500";
 	};
+
+	const onSubmit = handleSubmit(async (data: RegisterFormData) => {
+		try {
+			await signup(data as RegisterCommand);
+			window.location.href = "/";
+		} catch (err) {
+			// Error is handled by the hook
+			console.error("Submission error:", err);
+		}
+	});
 
 	return (
 		<Card className="w-full max-w-md shadow-lg">
@@ -140,7 +94,7 @@ export const RegisterForm = () => {
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<form onSubmit={handleSubmit} className="space-y-6" noValidate>
+				<form onSubmit={onSubmit} className="space-y-6" noValidate>
 					{submitError && (
 						<Alert variant="destructive" className="mb-4">
 							<AlertDescription>{submitError}</AlertDescription>
@@ -154,30 +108,25 @@ export const RegisterForm = () => {
 							<Input
 								id="email"
 								type="email"
-								name="email"
 								placeholder="twoj@email.com"
-								value={formData.email}
-								onChange={handleChange}
 								disabled={isLoading}
-								required
-								aria-invalid={!!validationErrors.email}
-								aria-describedby={
-									validationErrors.email ? "email-error" : undefined
-								}
+								aria-invalid={!!errors.email}
+								aria-describedby={errors.email ? "email-error" : undefined}
 								className={cn(
 									"pl-8",
-									validationErrors.email &&
+									errors.email &&
 										"border-destructive focus-visible:ring-destructive",
 								)}
+								{...register("email")}
 							/>
 						</div>
-						{validationErrors.email && (
+						{errors.email && (
 							<p
 								id="email-error"
 								className="text-sm text-destructive flex items-center gap-1"
 							>
 								<X className="h-4 w-4" />
-								{validationErrors.email}
+								{errors.email.message}
 							</p>
 						)}
 					</div>
@@ -189,19 +138,16 @@ export const RegisterForm = () => {
 							<Input
 								id="password"
 								type="password"
-								name="password"
 								placeholder="••••••••"
-								value={formData.password}
-								onChange={handleChange}
 								disabled={isLoading}
-								required
-								aria-invalid={!!validationErrors.password}
+								aria-invalid={!!errors.password}
 								aria-describedby="password-requirements"
 								className={cn(
 									"pl-8",
-									validationErrors.password &&
+									errors.password &&
 										"border-destructive focus-visible:ring-destructive",
 								)}
+								{...register("password")}
 							/>
 						</div>
 
@@ -222,12 +168,12 @@ export const RegisterForm = () => {
 										key={req.id}
 										className={cn(
 											"flex items-center gap-1",
-											req.regex.test(formData.password)
+											req.regex.test(password)
 												? "text-green-500"
 												: "text-muted-foreground",
 										)}
 									>
-										{req.regex.test(formData.password) ? (
+										{req.regex.test(password) ? (
 											<Check className="h-3 w-3" />
 										) : (
 											<X className="h-3 w-3" />
@@ -247,38 +193,36 @@ export const RegisterForm = () => {
 							<User className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
 							<Textarea
 								id="profileDescription"
-								name="profileDescription"
 								placeholder="Opowiedz coś o sobie"
-								value={formData.profileDescription || ""}
-								onChange={handleChange}
 								disabled={isLoading}
-								aria-invalid={!!validationErrors.profileDescription}
+								aria-invalid={!!errors.profileDescription}
 								aria-describedby={
-									validationErrors.profileDescription
-										? "description-error"
-										: undefined
+									errors.profileDescription ? "description-error" : undefined
 								}
 								className={cn(
 									"pl-8 min-h-[80px]",
-									validationErrors.profileDescription &&
+									errors.profileDescription &&
 										"border-destructive focus-visible:ring-destructive",
 								)}
+								{...register("profileDescription")}
 							/>
 						</div>
-						{validationErrors.profileDescription && (
+						{errors.profileDescription && (
 							<p
 								id="description-error"
 								className="text-sm text-destructive flex items-center gap-1"
 							>
 								<X className="h-4 w-4" />
-								{validationErrors.profileDescription}
+								{errors.profileDescription.message}
 							</p>
 						)}
 					</div>
 
 					<Button
 						type="submit"
-						disabled={isLoading || isPending || hasErrors}
+						disabled={
+							isLoading || isSubmitting || Object.keys(errors).length > 0
+						}
 						className="w-full"
 					>
 						{isLoading ? (

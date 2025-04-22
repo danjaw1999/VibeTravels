@@ -10,7 +10,6 @@ export function loadEnvironmentVariables(context = 'default') {
   // Najpierw sprawdź, czy istnieje plik .env.test
   const testEnvPath = path.resolve(process.cwd(), '.env.test');
   if (fs.existsSync(testEnvPath)) {
-    console.log(`[${context}] Loading environment variables from .env.test`);
     config({ path: testEnvPath });
     return;
   }
@@ -18,7 +17,6 @@ export function loadEnvironmentVariables(context = 'default') {
   // Jeśli nie, spróbuj załadować .env
   const envPath = path.resolve(process.cwd(), '.env');
   if (fs.existsSync(envPath)) {
-    console.log(`[${context}] Loading environment variables from .env`);
     config({ path: envPath });
     return;
   }

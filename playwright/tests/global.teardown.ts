@@ -7,7 +7,6 @@ import { loadEnvironmentVariables, logEnvironmentVariables, getSupabaseUrl } fro
 loadEnvironmentVariables('teardown');
 
 teardown('clean up Supabase database', async () => {
-  console.log('Cleaning up Supabase database after E2E tests...');
   
   logEnvironmentVariables('teardown');
   
@@ -29,7 +28,6 @@ teardown('clean up Supabase database', async () => {
       return;
     }
     
-    console.log(`Deleting test data for user: ${e2eUserId}`);
     
     const { data: travelNotesData, error: travelNotesQueryError } = await supabase
       .from('travel_notes')
@@ -43,10 +41,8 @@ teardown('clean up Supabase database', async () => {
     
     const travelNoteIds = travelNotesData?.map(note => note.id) || [];
     
-    console.log(`Found ${travelNoteIds.length} travel notes to delete:`, travelNotesData?.map(n => n.name));
     
     if (travelNoteIds.length > 0) {
-      console.log('Deleting attractions...');
       const { error: attractionsError } = await supabase
         .from('attractions')
         .delete()
@@ -55,10 +51,8 @@ teardown('clean up Supabase database', async () => {
       if (attractionsError) {
         console.error('Error deleting attractions:', attractionsError.message);
       } else {
-        console.log('Attractions deleted successfully');
       }
       
-      console.log('Deleting travel notes...');
       const { error: notesError } = await supabase
         .from('travel_notes')
         .delete()
@@ -67,7 +61,6 @@ teardown('clean up Supabase database', async () => {
       if (notesError) {
         console.error('Error deleting travel notes:', notesError.message);
         
-        console.log('Trying to delete notes one by one...');
         for (const noteId of travelNoteIds) {
           const { error } = await supabase
             .from('travel_notes')
@@ -77,11 +70,9 @@ teardown('clean up Supabase database', async () => {
           if (error) {
             console.error(`Error deleting note ${noteId}:`, error.message);
           } else {
-            console.log(`Deleted travel note ${noteId}`);
           }
         }
       } else {
-        console.log('Successfully deleted all travel notes');
       }
     }
     
@@ -93,13 +84,10 @@ teardown('clean up Supabase database', async () => {
     if (verifyError) {
       console.error('Error verifying deletion:', verifyError.message);
     } else {
-      console.log(`After cleanup: ${remainingNotes?.length || 0} travel notes remaining`);
       if (remainingNotes && remainingNotes.length > 0) {
-        console.log('WARNING: Failed to delete all travel notes!');
       }
     }
     
-    console.log('Database cleanup completed.');
   } catch (error) {
     console.error('Error during database cleanup:', error);
   }
