@@ -56,6 +56,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Build project
+        run: npm run build
+
       - name: Run unit tests with coverage
         run: npm run test:coverage
 
@@ -83,6 +86,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Build project
+        run: npm run build
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
