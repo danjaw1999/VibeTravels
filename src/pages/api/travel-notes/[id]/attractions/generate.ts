@@ -64,7 +64,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
     const suggestions = await attractionsService.generateAttractionSuggestions({
       name: travelNote.name,
       description: travelNote.description
-    }, 5);
+    }, 8);
 
     // Cache the results
     suggestionsCache.set(cacheKey, {

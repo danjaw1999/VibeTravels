@@ -5,7 +5,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { CreateTravelNoteCommand } from "@/types";
 import { useState } from "react";
-import { navigate } from "astro:transitions/client";
 
 export default function TravelNoteForm() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +43,8 @@ export default function TravelNoteForm() {
 
 			const { data: note } = await response.json();
 			if (note?.id) {
-				navigate(`/travel-notes/${note.id}`);
+				// Use window.location.href directly for simpler testing
+				window.location.href = `/travel-notes/${note.id}`;
 			}
 		} catch (err) {
 			console.error("Form submission failed:", err);
@@ -57,7 +57,11 @@ export default function TravelNoteForm() {
 	};
 
 	return (
-		<form onSubmit={handleSubmit} className="space-y-6">
+		<form
+			onSubmit={handleSubmit}
+			className="space-y-6"
+			data-testid="travel-note-form"
+		>
 			<div className="space-y-2">
 				<Label htmlFor="name">Destination</Label>
 				<Input
@@ -66,6 +70,7 @@ export default function TravelNoteForm() {
 					type="text"
 					required
 					placeholder="Enter destination name"
+					data-testid="name-input"
 				/>
 			</div>
 
@@ -76,19 +81,35 @@ export default function TravelNoteForm() {
 					name="description"
 					required
 					placeholder="Enter travel note description"
+					data-testid="description-input"
 				/>
 			</div>
 
 			<div className="flex items-center space-x-2">
-				<Checkbox id="is_public" name="is_public" defaultChecked />
+				<Checkbox
+					id="is_public"
+					name="is_public"
+					defaultChecked
+					data-testid="is-public-checkbox"
+				/>
 				<Label htmlFor="is_public">Make this note public</Label>
 			</div>
 
 			{error && (
-				<div className="text-sm font-medium text-destructive">{error}</div>
+				<div
+					className="text-sm font-medium text-destructive"
+					data-testid="error-message"
+				>
+					{error}
+				</div>
 			)}
 
-			<Button type="submit" disabled={isSubmitting} className="w-full">
+			<Button
+				type="submit"
+				disabled={isSubmitting}
+				className="w-full"
+				data-testid="submit-button"
+			>
 				{isSubmitting ? "Creating..." : "Create Travel Note"}
 			</Button>
 		</form>

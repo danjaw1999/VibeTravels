@@ -21,7 +21,10 @@ export function CreateNoteButton({ isLoggedIn }: CreateNoteButtonProps) {
 							disabled={!isLoggedIn}
 							className={!isLoggedIn ? "opacity-50" : ""}
 						>
-							<a href={isLoggedIn ? "/travel-notes/new" : undefined}>
+							<a
+								href={isLoggedIn ? "/travel-notes/new" : undefined}
+								data-testid="create-note-button"
+							>
 								<span className="inline-flex items-center gap-2">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"

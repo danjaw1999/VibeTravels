@@ -20,7 +20,6 @@ const AuthInput = React.forwardRef<HTMLInputElement, AuthInputProps>(
 					id={id}
 					ref={ref}
 					{...inputProps}
-					data-testid={`auth-input-${id}`}
 					className={`
             w-full px-3 py-2 bg-background border rounded-md text-foreground placeholder:text-muted-foreground
             focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring

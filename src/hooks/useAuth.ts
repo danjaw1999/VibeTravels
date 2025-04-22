@@ -15,20 +15,20 @@ export const useAuth = () => {
     try {
       setIsLoading(true);
       setError(null);
-      return await action(data);
+      const result = await action(data);
+      setIsLoading(false);
+      return result;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'An unexpected error occurred';
       setError(message);
-      throw err;
-    } finally {
       setIsLoading(false);
+      throw err;
     }
   };
 
   const login = (data: LoginFormData) => handleAuthAction(authService.login, data);
 
   const signup = (data: SignupFormData) => handleAuthAction(authService.signup, data);
-
 
   return {
     login,

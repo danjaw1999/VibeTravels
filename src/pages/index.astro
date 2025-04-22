@@ -11,7 +11,6 @@ import {
 } from '@/components/ui/card';
 import { CreateNoteCardButton } from '@/components/CreateNoteCardButton';
 import { createSupabaseServerInstance } from '@/db/supabase';
-import LoginButton from '@/components/LoginButton';
 
 const supabase = createSupabaseServerInstance({
   cookies: Astro.cookies,
@@ -38,9 +37,6 @@ const {
         Welcome {user ? user.email : 'to VibeTravels'}
       </h1>
       <p class="text-xl text-muted-foreground">Start sharing your travel experiences</p>
-      <div class="mt-4">
-        <LoginButton client:load initialUser={user} />
-      </div>
     </div>
 
     <div 

@@ -39,10 +39,15 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 	};
 
 	return (
-		<Card className="w-full max-w-md">
+		<Card className="w-full max-w-md" data-testid="login-form">
 			<CardHeader className="space-y-1">
-				<CardTitle className="text-2xl text-center">Witaj ponownie</CardTitle>
-				<CardDescription className="text-center">
+				<CardTitle className="text-2xl text-center" data-testid="login-title">
+					Witaj ponownie
+				</CardTitle>
+				<CardDescription
+					className="text-center"
+					data-testid="login-description"
+				>
 					Zaloguj się do swojego konta
 				</CardDescription>
 			</CardHeader>
@@ -52,9 +57,13 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 					className="space-y-4"
 					method="POST"
 					action="javascript:void(0);"
+					data-testid="login-form-element"
 				>
 					{apiError && (
-						<div className="p-3 text-sm font-medium text-destructive-foreground bg-destructive/10 rounded-md">
+						<div
+							className="p-3 text-sm font-medium text-destructive-foreground bg-destructive/10 rounded-md"
+							data-testid="login-error"
+						>
 							{apiError}
 						</div>
 					)}
@@ -67,6 +76,7 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 						autoComplete="email"
 						disabled={isLoading}
 						placeholder="jankowalski@example.com"
+						data-testid="email-input"
 						{...register("email")}
 					/>
 
@@ -78,6 +88,7 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 						autoComplete="current-password"
 						disabled={isLoading}
 						placeholder="••••••••"
+						data-testid="password-input"
 						{...register("password")}
 					/>
 
@@ -85,6 +96,7 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 						<a
 							href="/auth/reset-password"
 							className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
+							data-testid="reset-password-link"
 						>
 							Nie pamiętasz hasła?
 						</a>
@@ -94,6 +106,7 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 						type="submit"
 						disabled={isLoading}
 						className="w-full px-4 py-2 text-sm font-medium text-white bg-black hover:bg-black/90 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+						data-testid="login-submit-button"
 					>
 						{isLoading ? "Logowanie..." : "Zaloguj się"}
 					</button>
@@ -105,6 +118,7 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 					<a
 						href="/register"
 						className="font-medium text-primary hover:text-primary/90 transition-colors"
+						data-testid="register-link"
 					>
 						Zarejestruj się
 					</a>

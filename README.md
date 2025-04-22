@@ -21,6 +21,16 @@ VibeTravels is a travel planning application that leverages AI to transform simp
 **AI**
 - Openrouter.ai: Integrates with multiple AI models (OpenAI, Anthropic, Google, etc.) to provide efficient and cost-effective AI services with configurable API key limits.
 
+**Testing**
+- Vitest: Fast testing framework native to Vite for unit and integration tests.
+- React Testing Library: Component testing with a focus on user behavior.
+- MSW (Mock Service Worker): API mocking at network level for realistic tests.
+- Playwright: End-to-end testing across multiple browsers.
+- Storybook & Chromatic: Component documentation and visual regression testing.
+- axe-core: Automated accessibility testing.
+- TypeSpec/Zod: Runtime type validation.
+- Biome: Fast linting and formatting.
+
 **CI/CD & Hosting**
 - GitHub Actions: For constructing CI/CD pipelines.
 - DigitalOcean: Hosts the application using Docker images.
@@ -176,10 +186,10 @@ npm test
 
 ### Testing
 
-The project includes unit tests and integration tests:
+The project includes unit, integration, end-to-end, and accessibility tests:
 
 ```bash
-# Run all tests
+# Run all tests (unit and integration)
 npm test
 
 # Run tests in watch mode
@@ -188,9 +198,22 @@ npm run test:watch
 # Run tests with coverage
 npm run test:coverage
 
-# Run tests with UI
-npm run test:ui
+# Run Playwright E2E tests
+npm run test:e2e
+
+# Run Storybook for component development and testing
+npm run storybook
+
+# Run accessibility tests
+npm run test:a11y
 ```
+
+Our testing philosophy follows these principles:
+- Unit and integration tests with Vitest and React Testing Library
+- Realistic API mocking with MSW
+- End-to-end workflows with Playwright
+- Component documentation and visual testing with Storybook
+- Accessibility compliance through automated and manual testing
 
 ## API Endpoints
 

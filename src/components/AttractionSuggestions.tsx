@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2 } from "lucide-react";
+import { SuggestionsSkeleton } from "@/components/SuggestionsSkeleton";
 import type {
 	AttractionSuggestionDTO,
 	TravelNoteDTO,
@@ -79,12 +80,9 @@ export function AttractionSuggestions({
 					image_source: s.image?.source,
 				}));
 
-			// Jeśli przekazano onAttractionsAdd, użyj go
 			if (onAttractionsAdd) {
 				await onAttractionsAdd(selectedAttractions);
-			}
-			// W przeciwnym razie wykonaj własne wywołanie API
-			else {
+			} else {
 				const response = await fetch(
 					`/api/travel-notes/${travelNote.id}/attractions`,
 					{
@@ -101,7 +99,6 @@ export function AttractionSuggestions({
 					throw new Error(data.message || "Failed to add attractions");
 				}
 
-				// Odśwież stronę po dodaniu atrakcji
 				window.location.reload();
 			}
 		} catch (err) {
@@ -114,7 +111,6 @@ export function AttractionSuggestions({
 		}
 	};
 
-	// Automatycznie generuj sugestie, jeśli nie ma jeszcze żadnych atrakcji
 	useEffect(() => {
 		if (
 			travelNote.attractions.length === 0 &&
@@ -145,27 +141,36 @@ export function AttractionSuggestions({
 				</div>
 			)}
 
-			{isLoading ? (
+			{isLoading && suggestions.length === 0 ? (
+				<SuggestionsSkeleton />
+			) : isLoading && suggestions.length > 0 ? (
 				<div
-					className="flex items-center justify-center p-8"
+					className="flex items-center justify-center p-4"
 					aria-live="polite"
 				>
 					<Loader2
-						className="h-8 w-8 animate-spin text-primary"
+						className="h-5 w-5 animate-spin text-primary"
 						aria-hidden="true"
 					/>
-					<span className="ml-2">
-						{suggestions.length === 0
-							? "Generowanie sugestii..."
-							: "Dodawanie wybranych atrakcji..."}
-					</span>
+					<span className="ml-2">Dodawanie wybranych atrakcji...</span>
 				</div>
 			) : suggestions.length > 0 ? (
 				<>
 					<ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						{suggestions.map((suggestion) => (
-							<li key={suggestion.id || suggestion.name}>
-								<Card className="p-4 hover:shadow-lg transition-shadow">
+							<li
+								key={suggestion.id || suggestion.name}
+								onClick={() => {
+									handleCheckboxChange(suggestion.id || suggestion.name);
+								}}
+								onKeyDown={(e) => {
+									if (e.key === "Enter" || e.key === " ") {
+										e.preventDefault();
+										handleCheckboxChange(suggestion.id || suggestion.name);
+									}
+								}}
+							>
+								<Card className="p-4 hover:shadow-lg transition-shadow cursor-pointer min-h-full">
 									<div className="flex items-start space-x-4">
 										<Checkbox
 											id={`attraction-${suggestion.id || suggestion.name}`}

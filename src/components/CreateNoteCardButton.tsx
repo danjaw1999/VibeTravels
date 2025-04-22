@@ -27,6 +27,7 @@ export function CreateNoteCardButton({
 							className="inline-flex items-center gap-2"
 							tabIndex={isLoggedIn ? undefined : -1}
 							aria-disabled={!isLoggedIn}
+							data-testid="create-note-card-button"
 						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
