@@ -1,9 +1,9 @@
-import type { SupabaseClient } from "@/db/supabase";
-import type { AttractionDTO, UUID, AttractionSuggestionDTO, CreateAttractionCommand } from "@/types";
+import type { AttractionDTO, UUID, AttractionSuggestionDTO } from "@/types";
 import type { AttractionCreateInput } from "@lib/schemas/attractions.schema";
 import { DatabaseError, NotFoundError, ForbiddenError } from "@lib/errors/api.error";
 import { openai } from "@lib/openai.client";
 import { searchAttractionImage } from "@lib/pexels.client";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 interface OpenAIAttractionResponse {
   attractions: {
@@ -14,42 +14,6 @@ interface OpenAIAttractionResponse {
     image?: string;
     estimatedPrice: string;
   }[];
-}
-
-// Stałe Unsplash dla popularnych typów atrakcji
-const UNSPLASH_IMAGES = {
-  castle: "https://images.unsplash.com/photo-1533050487297-09b450131914",
-  palace: "https://images.unsplash.com/photo-1630335856915-3987afdfdc9a",
-  church: "https://images.unsplash.com/photo-1548867736-82d26c916532",
-  cathedral: "https://images.unsplash.com/photo-1558697698-9300a84a6a99",
-  museum: "https://images.unsplash.com/photo-1554907984-15263bfd63bd",
-  park: "https://images.unsplash.com/photo-1568515387631-8b650bbcdb90",
-  garden: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae",
-  tower: "https://images.unsplash.com/photo-1569951715254-38f4647d55e6",
-  monument: "https://images.unsplash.com/photo-1547995886-6dc09384c6e6",
-  square: "https://images.unsplash.com/photo-1552602986-96e5b85f2f6a",
-  beach: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e",
-  mountain: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b",
-  temple: "https://images.unsplash.com/photo-1548018560-c7196548e84d",
-  market: "https://images.unsplash.com/photo-1555679486-e341a3e7b6de",
-  bridge: "https://images.unsplash.com/photo-1514924013411-cbf25faa35bb",
-  ruins: "https://images.unsplash.com/photo-1548019979-e54c9092cd42",
-  waterfall: "https://images.unsplash.com/photo-1432405972618-c60b0225b8f9",
-};
-
-// Funkcja pomocnicza do znalezienia pasującego zdjęcia
-function findMatchingImage(name: string, description: string): string {
-  const text = `${name} ${description}`.toLowerCase();
-
-  for (const [key, url] of Object.entries(UNSPLASH_IMAGES)) {
-    if (text.includes(key)) {
-      // Dodaj parametry Unsplash dla lepszej jakości i optymalizacji
-      return `${url}?auto=format&fit=crop&w=1280&q=80`;
-    }
-  }
-
-  // Domyślne zdjęcie dla zabytku/atrakcji
-  return `${UNSPLASH_IMAGES.monument}?auto=format&fit=crop&w=1280&q=80`;
 }
 
 export class AttractionsService {

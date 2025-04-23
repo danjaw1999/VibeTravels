@@ -1,11 +1,5 @@
 import type { AstroCookies } from "astro";
-import {
-  createBrowserClient,
-  createServerClient,
-  parseCookieHeader,
-  type CookieOptions,
-  type CookieOptionsWithName,
-} from "@supabase/ssr";
+import { createBrowserClient, createServerClient, parseCookieHeader, type CookieOptionsWithName } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
 
 const SUPABASE_URL = import.meta.env.SUPABASE_URL;

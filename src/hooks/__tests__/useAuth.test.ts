@@ -95,6 +95,7 @@ describe("useAuth hook", () => {
       try {
         await result.current.login({ email: "test@example.com", password: "wrong" });
       } catch (e) {
+        console.error(e);
         // Expected error
       }
     });

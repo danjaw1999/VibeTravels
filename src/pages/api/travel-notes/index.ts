@@ -16,7 +16,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
     const showPublicOnly = params.isPublic !== "false";
 
     // Only check auth if we want to see private notes
-    let userId: string | undefined;
     if (!showPublicOnly) {
       const {
         data: { user },
@@ -28,7 +27,6 @@ export const GET: APIRoute = async ({ request, locals }) => {
           headers: { "Content-Type": "application/json" },
         });
       }
-      userId = user.id;
     }
 
     const query = travelNoteQuerySchema.parse({

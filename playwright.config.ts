@@ -1,12 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import dotenv from 'dotenv';
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import dotenv from "dotenv";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.resolve(__dirname, '.env.integration') });
+dotenv.config({ path: path.resolve(__dirname, ".env.integration") });
 
 export default defineConfig({
   testDir: "./playwright/tests",
@@ -39,14 +39,14 @@ export default defineConfig({
       },
       dependencies: ["auth setup"],
       teardown: "cleanup db",
-      testMatch: /(?!login\.).*\.spec\.ts/, 
+      testMatch: /(?!login\.).*\.spec\.ts/,
     },
     {
       name: "auth tests",
       use: {
         ...devices["Desktop Chrome"],
       },
-      testMatch: /login\.spec\.ts/, 
+      testMatch: /login\.spec\.ts/,
     },
   ],
   webServer: {
