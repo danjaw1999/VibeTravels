@@ -34,7 +34,10 @@ setup("authenticate", async ({ page, baseURL }) => {
   // Wait for and click submit button
   const submitButton = page.locator('button[type="submit"]');
   await submitButton.waitFor({ state: "visible" });
-  await Promise.all([page.waitForNavigation({ waitUntil: "networkidle" }), submitButton.click()]);
+  await Promise.all([
+    submitButton.click(),
+    page.waitForURL("/**", { waitUntil: "networkidle" }),
+  ]);
 
   // Wait for successful navigation and verify we're logged in
   await expect(page.getByTestId("logout-button")).toBeVisible({
