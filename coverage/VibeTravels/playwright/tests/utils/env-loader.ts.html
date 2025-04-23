@@ -201,8 +201,8 @@
 <span class="cstat-no" title="statement not covered" >    E2E_PASSWORD_EXISTS: !!process.env.E2E_PASSWORD,</span>
 <span class="cstat-no" title="statement not covered" >    SUPABASE_URL_EXISTS: !!process.env.SUPABASE_URL,</span>
 <span class="cstat-no" title="statement not covered" >    SUPABASE_KEY_EXISTS: !!process.env.SUPABASE_KEY,</span>
-<span class="cstat-no" title="statement not covered" >    PUBLIC_SUPABASE_URL_EXISTS: !!process.env.PUBLIC_SUPABASE_URL,</span>
-<span class="cstat-no" title="statement not covered" >    PUBLIC_SUPABASE_KEY_EXISTS: !!process.env.PUBLIC_SUPABASE_KEY,</span>
+<span class="cstat-no" title="statement not covered" >    SUPABASE_URL_EXISTS: !!process.env.SUPABASE_URL,</span>
+<span class="cstat-no" title="statement not covered" >    SUPABASE_KEY_EXISTS: !!process.env.SUPABASE_KEY,</span>
 <span class="cstat-no" title="statement not covered" >  });</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
@@ -210,14 +210,14 @@
  * Funkcja zwracająca URL Supabase, sprawdzając różne możliwe nazwy zmiennych środowiskowych
  */
 <span class="cstat-no" title="statement not covered" >export function getSupabaseUrl(): string {</span>
-<span class="cstat-no" title="statement not covered" >  return process.env.SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL || "";</span>
+<span class="cstat-no" title="statement not covered" >  return process.env.SUPABASE_URL || process.env.SUPABASE_URL || "";</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;
 /**
  * Funkcja zwracająca klucz Supabase, sprawdzając różne możliwe nazwy zmiennych środowiskowych
  */
 <span class="cstat-no" title="statement not covered" >export function getSupabaseKey(): string {</span>
-<span class="cstat-no" title="statement not covered" >  return process.env.SUPABASE_KEY || process.env.PUBLIC_SUPABASE_KEY || "";</span>
+<span class="cstat-no" title="statement not covered" >  return process.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "";</span>
 <span class="cstat-no" title="statement not covered" >}</span>
 &nbsp;</pre></td></tr></table></pre>
 
