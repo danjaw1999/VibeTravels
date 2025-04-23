@@ -1,6 +1,6 @@
 import { test as setup, expect } from "@playwright/test";
-import path from "path";
-import { fileURLToPath } from "url";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,10 +34,7 @@ setup("authenticate", async ({ page, baseURL }) => {
   // Wait for and click submit button
   const submitButton = page.locator('button[type="submit"]');
   await submitButton.waitFor({ state: "visible" });
-  await Promise.all([
-    submitButton.click(),
-    page.waitForURL("/**", { waitUntil: "networkidle" }),
-  ]);
+  await Promise.all([submitButton.click(), page.waitForURL("/**", { waitUntil: "networkidle" })]);
 
   // Wait for successful navigation and verify we're logged in
   await expect(page.getByTestId("logout-button")).toBeVisible({

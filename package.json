@@ -8,8 +8,9 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "prepare": "husky",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx,.astro",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx,.astro --fix",
     "format": "prettier --write .",
     "test": "vitest",
     "test:watch": "vitest watch",
@@ -81,14 +82,14 @@
     "eslint-plugin-react-hooks": "5.2.0",
     "husky": "^9.1.7",
     "jsdom": "^26.1.0",
-    "lint-staged": "^15.5.0",
+    "lint-staged": "^15.5.1",
     "msw": "^2.7.4",
     "prettier-plugin-astro": "0.14.1",
     "typescript-eslint": "8.28.0",
     "vitest": "^3.1.1"
   },
   "lint-staged": {
-    "*.{ts,tsx,astro}": [
+    "*.{js,jsx,ts,tsx,astro}": [
       "eslint --fix"
     ],
     "*.{json,css,md}": [
