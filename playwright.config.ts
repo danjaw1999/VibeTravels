@@ -52,7 +52,6 @@ export default defineConfig({
   webServer: {
     command: "npm run dev:e2e",
     url: "http://localhost:3000",
-    port: 3000,
     reuseExistingServer: !process.env.CI,
     env: {
       SUPABASE_URL: process.env.SUPABASE_URL || "",

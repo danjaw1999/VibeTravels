@@ -198,7 +198,7 @@
 <span class="cstat-no" title="statement not covered" >import { createClient } from "@supabase/supabase-js";</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >const SUPABASE_URL = import.meta.env.SUPABASE_URL;</span>
-<span class="cstat-no" title="statement not covered" >const SUPABASE_PUBLIC_KEY = import.meta.env.SUPABASE_KEY;</span>
+<span class="cstat-no" title="statement not covered" >const SUPABASE_KEY = import.meta.env.SUPABASE_KEY;</span>
 <span class="cstat-no" title="statement not covered" >const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >export const cookieOptions: CookieOptionsWithName = {</span>
@@ -209,7 +209,7 @@
 <span class="cstat-no" title="statement not covered" >};</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, {</span>
+<span class="cstat-no" title="statement not covered" >  const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {</span>
 <span class="cstat-no" title="statement not covered" >    cookieOptions,</span>
 <span class="cstat-no" title="statement not covered" >    cookies: {</span>
       // @ts-expect-error - correct implementation per Supabase docs
@@ -245,10 +245,10 @@
 <span class="cstat-no" title="statement not covered" >};</span>
 &nbsp;
 <span class="cstat-no" title="statement not covered" >export const createSupabaseClient = () =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >  return createBrowserClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);</span>
+<span class="cstat-no" title="statement not covered" >  return createBrowserClient(SUPABASE_URL, SUPABASE_KEY);</span>
 <span class="cstat-no" title="statement not covered" >};</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);</span>
+<span class="cstat-no" title="statement not covered" >export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);</span>
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->

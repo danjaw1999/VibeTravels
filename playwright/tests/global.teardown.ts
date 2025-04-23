@@ -1,15 +1,9 @@
 import { test as teardown } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../../src/db/database.types";
-import { loadEnvironmentVariables, logEnvironmentVariables, getSupabaseUrl } from "./utils/env-loader";
-
-// Załaduj zmienne środowiskowe
-loadEnvironmentVariables("teardown");
 
 teardown("clean up Supabase database", async () => {
-  logEnvironmentVariables("teardown");
-
-  const supabaseUrl = getSupabaseUrl();
+  const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {

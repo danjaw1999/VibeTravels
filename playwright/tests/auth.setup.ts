@@ -1,7 +1,4 @@
 import { test as setup } from "@playwright/test";
-import { loadEnvironmentVariables } from "./utils/env-loader";
-
-loadEnvironmentVariables("auth-setup");
 
 setup("authenticate", async ({ page }) => {
   // Get credentials from environment variables

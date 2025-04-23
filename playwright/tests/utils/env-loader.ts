@@ -2,12 +2,8 @@ import { config } from "dotenv";
 import * as path from "node:path";
 import * as fs from "node:fs";
 
-/**
- * Funkcja ładująca zmienne środowiskowe z plików .env i .env.test
- */
 export function loadEnvironmentVariables() {
-  // Najpierw sprawdź, czy istnieje plik .env.test
-  const testEnvPath = path.resolve(process.cwd(), ".env.test");
+  const testEnvPath = path.resolve(process.cwd(), ".env.integration");
   if (fs.existsSync(testEnvPath)) {
     config({ path: testEnvPath });
     return;
