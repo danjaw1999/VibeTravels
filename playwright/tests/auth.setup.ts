@@ -17,9 +17,16 @@ setup("authenticate", async ({ page }) => {
   // Fill in login form
   await page.getByTestId("email-input").fill(email);
   await page.getByTestId("password-input").fill(password);
-
-  // Submit form
+  page.on('console', msg => console.log(`PAGE LOG: ${msg.text()}`));
+     
+  // Kliknij z waitsFor, aby zobaczyć komunikaty
   await page.getByTestId("login-submit-button").click();
+  
+  // Sprawdź, czy pojawił się komunikat o błędzie
+  const errorMessage = await page.getByText("Błąd logowania").isVisible();
+  if (errorMessage) {
+    throw new Error("Login failed: Error message displayed");
+  }
 
   // Wait for navigation to the home page
   await page.waitForURL("/");
