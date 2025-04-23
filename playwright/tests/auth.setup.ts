@@ -17,11 +17,11 @@ setup("authenticate", async ({ page }) => {
   // Fill in login form
   await page.getByTestId("email-input").fill(email);
   await page.getByTestId("password-input").fill(password);
-  page.on('console', msg => console.log(`PAGE LOG: ${msg.text()}`));
-     
+  page.on("console", (msg) => console.log(`PAGE LOG: ${msg.text()}`));
+
   // Kliknij z waitsFor, aby zobaczyć komunikaty
   await page.getByTestId("login-submit-button").click();
-  
+
   // Sprawdź, czy pojawił się komunikat o błędzie
   const errorMessage = await page.getByText("Błąd logowania").isVisible();
   if (errorMessage) {
