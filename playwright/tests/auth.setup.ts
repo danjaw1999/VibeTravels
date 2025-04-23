@@ -1,55 +1,45 @@
-import { test as setup, expect } from "@playwright/test";
+import { test as setup, expect } from '@playwright/test';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-setup("authenticate", async ({ page }) => {
-  // Get credentials from environment variables
-  const email = process.env.E2E_USERNAME;
-  const password = process.env.E2E_PASSWORD;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const authFile = path.join(__dirname, '../playwright/.auth/user.json');
 
-  if (!email || !password) {
-    throw new Error(`Missing E2E test credentials in environment variables. 
-    E2E_USERNAME: ${email ? "exists" : "missing"}
-    E2E_PASSWORD: ${password ? "exists" : "missing"}`);
-  }
+const E2E_USERNAME = process.env.E2E_USERNAME;
+const E2E_PASSWORD = process.env.E2E_PASSWORD;
 
-  try {
-    await page.goto("/login", { timeout: 30000, waitUntil: "networkidle" });
+if (!E2E_USERNAME || !E2E_PASSWORD) {
+  throw new Error('E2E_USERNAME and E2E_PASSWORD must be set');
+}
 
-    await page.getByTestId("email-input").fill(email);
-    await page.getByTestId("password-input").fill(password);
+setup('authenticate', async ({ page, baseURL }) => {
+  // Navigate to login page and wait for it to load
+  await page.goto('/login');
 
-    const submitButton = page.getByTestId("login-submit-button");
+  // Wait for and fill email input
+  const emailInput = page.locator('input[data-testid="email-input"]');
+  await emailInput.waitFor({ state: 'visible' });
+  await emailInput.click();
+  await emailInput.fill(E2E_USERNAME);
+  await expect(emailInput).toHaveValue(E2E_USERNAME);
 
-    const responsePromise = page.waitForResponse(
-      (response) => response.url().includes("/api/auth/login") || response.url().includes("supabase"),
-      { timeout: 20000 }
-    );
+  // Wait for and fill password input
+  const passwordInput = page.locator('input[data-testid="password-input"]');
+  await passwordInput.waitFor({ state: 'visible' });
+  await passwordInput.click();
+  await passwordInput.fill(E2E_PASSWORD);
+  await expect(passwordInput).toHaveValue(E2E_PASSWORD);
 
-    await submitButton.click();
+  // Wait for and click submit button
+  const submitButton = page.locator('button[type="submit"]');
+  await submitButton.waitFor({ state: 'visible' });
+  await Promise.all([page.waitForNavigation({ waitUntil: 'networkidle' }), submitButton.click()]);
 
-    const response = await responsePromise;
+  // Wait for successful navigation and verify we're logged in
+  await expect(page.getByTestId('logout-button')).toBeVisible({
+    timeout: 10000,
+  });
 
-    if (response.status() >= 400) {
-      console.error(`Login failed with status ${response.status()}`);
-      const responseText = await response.text();
-      console.error(`Response body: ${responseText}`);
-    }
-
-    await Promise.race([
-      page.waitForURL("/*", { timeout: 30000 }),
-      page.waitForURL("/**", { timeout: 30000 }),
-      page.waitForSelector('[data-testid="logged-in-menu"]', { timeout: 30000 }),
-    ]);
-
-    const isLoggedIn = await page.getByTestId("logged-in-menu").isVisible();
-    if (!isLoggedIn) {
-      const pageContent = await page.content();
-      console.error(`Page content: ${pageContent.substring(0, 500)}...`);
-      throw new Error("Login seems successful but user doesn't appear to be logged in");
-    }
-
-    await page.context().storageState({ path: "playwright/.auth/user.json" });
-  } catch (error) {
-    await page.screenshot({ path: "auth-failure.png", fullPage: true });
-    throw error;
-  }
+  await page.context().storageState({ path: authFile });
 });
