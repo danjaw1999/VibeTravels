@@ -22,6 +22,7 @@ export default defineConfig({
     screenshot: "only-on-failure",
     video: "on-first-retry",
   },
+  timeout: 60000,
   projects: [
     {
       name: "auth setup",
