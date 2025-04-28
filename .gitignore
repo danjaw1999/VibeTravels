@@ -19,6 +19,12 @@ pnpm-debug.log*
 .env.test
 .env.integration
 
+# playwright
+playwright/
+playwright-report/
+test-results/
+playwright/.auth/
+
 # macOS-specific files
 .DS_Store
 
