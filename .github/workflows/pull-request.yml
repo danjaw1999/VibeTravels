@@ -101,6 +101,8 @@ jobs:
           echo "E2E_USERNAME_ID=${{ secrets.E2E_USERNAME_ID }}" >> .env.integration
           echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.integration
           echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}" >> .env.integration
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.integration
+          echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> .env.integration
 
       - name: Generate auth credentials
         run: npx playwright test auth.setup.ts
