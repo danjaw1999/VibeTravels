@@ -16,6 +16,11 @@ export default defineConfig({
       SUPABASE_URL: envField.string({ context: "server", access: "secret" }),
       SUPABASE_KEY: envField.string({ context: "server", access: "secret" }),
       SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: "server", access: "secret" }),
+      E2E_USERNAME: envField.string({ context: "server", access: "secret" }),
+      E2E_PASSWORD: envField.string({ context: "server", access: "secret" }),
+      E2E_USERNAME_ID: envField.string({ context: "server", access: "secret" }),
+      OPENAI_API_KEY: envField.string({ context: "server", access: "secret" }),
+      PEXELS_API_KEY: envField.string({ context: "server", access: "secret" }),
     },
   },
   vite: {
