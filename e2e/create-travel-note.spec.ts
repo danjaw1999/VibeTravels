@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { loadEnvironmentVariables } from "./utils/env-loader";
 
 test.describe("Travel Note Creation (logged in user)", () => {
-  test.use({ storageState: "playwright/.auth/user.json" });
+  test.use({ storageState: "e2e/.auth/user.json" });
   test.beforeEach(async ({ page }) => {
     loadEnvironmentVariables();
     await page.waitForLoadState("networkidle");

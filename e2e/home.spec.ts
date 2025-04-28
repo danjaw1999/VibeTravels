@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { HomePage } from "./page-objects/HomePage";
 
 test.describe("Home Page (logged in user)", () => {
-  test.use({ storageState: "playwright/.auth/user.json" });
+  test.use({ storageState: "e2e/.auth/user.json" });
 
   test("should load the home page correctly for logged-in user", async ({ page }) => {
     const homePage = new HomePage(page);

@@ -93,7 +93,7 @@ jobs:
       - name: Prepare Playwright directories
         run: mkdir -p playwright/.auth
 
-      - name: Create .env.test file
+      - name: Create .env.integration file
         run: |
           echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env.integration
           echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env.integration
@@ -102,8 +102,15 @@ jobs:
           echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.integration
           echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}" >> .env.integration
 
+      - name: Generate auth credentials
+        run: npx playwright test auth.setup.ts
+        env:
+          NODE_ENV: integration
+
       - name: Run E2E tests
         run: npm run test:e2e
+        env:
+          NODE_ENV: integration
 
       - name: Upload E2E test results
         uses: actions/upload-artifact@v4
