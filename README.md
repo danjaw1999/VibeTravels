@@ -175,7 +175,7 @@ const { attractions: createdAttractions } = await response.json();
 
 ```bash
 # Supabase
-PUBLIC_SUPABASE_URL=your_supabase_url
+SUPABASE_URL=your_supabase_url
 PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # OpenAI

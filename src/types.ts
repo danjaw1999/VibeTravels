@@ -1,13 +1,3 @@
-import type { Database, SupabaseClient } from "./db/supabase";
-import type { User } from "@supabase/supabase-js";
-
-type DBTables = Database["public"]["Tables"];
-
-// Base types from database
-type DBUser = DBTables["users"]["Row"];
-type DBTravelNote = DBTables["travel_notes"]["Row"];
-type DBAttraction = DBTables["attractions"]["Row"];
-
 // Common types
 export type UUID = string;
 export type ISODateTime = string;

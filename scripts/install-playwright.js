@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+/* global console, process */
+
 import { execSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { join } from "node:path";

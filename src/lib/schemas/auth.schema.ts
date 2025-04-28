@@ -5,7 +5,7 @@ export const registerSchema = z.object({
     .string()
     .email("Nieprawidłowy format adresu email")
     .min(1, "Email jest wymagany")
-    .refine(async (email) => {
+    .refine(async () => {
       // TODO: Add check for existing email in database
       return true;
     }, "Ten adres email jest już zajęty"),

@@ -4,7 +4,7 @@ import { defineMiddleware } from "astro:middleware";
 // Public paths that don't require authentication
 const PUBLIC_PATHS = ["/", "/travel-notes", "/login", "/signup", "/api/auth/login", "/api/auth/signup"];
 
-export const onRequest = defineMiddleware(async ({ locals, cookies, url, request, redirect }, next) => {
+export const onRequest = defineMiddleware(async ({ locals, cookies, url, request }, next) => {
   try {
     const supabase = createSupabaseServerInstance({
       cookies,

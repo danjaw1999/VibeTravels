@@ -45,7 +45,7 @@ export const transitions = {
 
 // Ultra-simplified layer class generator
 export const getLayerClasses = {
-  container: (layerType: LayerType, isSelected: boolean, isExpanded: boolean = false): string => {
+  container: (layerType: LayerType, isSelected: boolean, isExpanded = false): string => {
     return isSelected
       ? `bg-gray-800/70 border-${layerColors[layerType]}-400 border shadow-md ${
           !isExpanded ? "hover:bg-gray-700/70" : ""

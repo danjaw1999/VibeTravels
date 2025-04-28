@@ -31,11 +31,11 @@ const passwordRequirements: PasswordRequirement[] = [
 ];
 
 // Define a specific type for the form
-type RegisterFormData = {
+interface RegisterFormData {
   email: string;
   password: string;
   profileDescription?: string;
-};
+}
 
 export const RegisterForm = () => {
   const { signup, isLoading, error: submitError } = useAuth();
@@ -198,7 +198,7 @@ export const RegisterForm = () => {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="px-8 text-center text-sm text-muted-foreground">
-          Klikając "Utwórz konto", akceptujesz nasze{" "}
+          Klikając &quot;Utwórz konto&quot;, akceptujesz nasze{" "}
           <a href="/terms" className="underline underline-offset-4 hover:text-primary">
             Warunki korzystania
           </a>
