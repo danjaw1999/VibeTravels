@@ -4,6 +4,7 @@ import { LogIn, Menu, X, Home, MapIcon, PlusCircle, User as UserIcon, LogOut } f
 import { Link } from "@/components/ui/link";
 import { useAuthStore } from "@/store/authStore";
 import type { User } from "@supabase/supabase-js";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 interface NavBarProps {
   initialUser?: User | null;
@@ -14,6 +15,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
   const { isAuthenticated, logout, setUser } = useAuthStore();
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const isAuthEnabled = isFeatureEnabled("auth");
 
   // Dodaj blokadę scrollowania gdy menu jest otwarte
   useEffect(() => {
@@ -113,7 +115,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
 
           {isLoading ? (
             <div className="w-24 h-9 animate-pulse bg-muted rounded-md" data-testid="loading-indicator" />
-          ) : userIsAuthenticated ? (
+          ) : userIsAuthenticated && isAuthEnabled ? (
             <div className="flex items-center space-x-2" data-testid="logged-in-menu">
               <Link
                 href="/profile"
@@ -135,7 +137,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
                 <span>Wyloguj</span>
               </Button>
             </div>
-          ) : (
+          ) : isAuthEnabled ? (
             <div className="flex items-center space-x-2" data-testid="guest-menu">
               <Link
                 href="/login"
@@ -149,7 +151,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
                 <Link href="/register">Zarejestruj się</Link>
               </Button>
             </div>
-          )}
+          ) : null}
         </nav>
       </div>
 
@@ -212,7 +214,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
           <div className="mt-auto pb-6">
             {isLoading ? (
               <div className="w-full h-9 animate-pulse bg-muted rounded-md" data-testid="mobile-loading-indicator" />
-            ) : userIsAuthenticated ? (
+            ) : userIsAuthenticated && isAuthEnabled ? (
               <div className="flex flex-col space-y-3">
                 <Link
                   href="/profile"
@@ -235,7 +237,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
                   <span>Wyloguj</span>
                 </Button>
               </div>
-            ) : (
+            ) : isAuthEnabled ? (
               <div className="space-y-3">
                 <Link
                   href="/login"
@@ -252,7 +254,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
                   </Link>
                 </Button>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       </div>

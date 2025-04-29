@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { CreateNoteCardButton } from "@/components/CreateNoteCardButton";
 import { createSupabaseServerInstance } from "@/db/supabase";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 const supabase = createSupabaseServerInstance({
   cookies: Astro.cookies,
@@ -13,10 +14,12 @@ const supabase = createSupabaseServerInstance({
 const {
   data: { user },
 } = await supabase.auth.getUser();
+
+const isCreateNoteEnabled = isFeatureEnabled("create-travel-note");
 ---
 
 <Layout title="Welcome to VibeTravels">
-  <main class="container mx-auto px-4 py-8 min-h-screen" transition:animate="slide">
+  <main class="container mx-auto px-4 py-8" transition:animate="slide">
     <div class="text-center mb-12 animate-fade-in">
       <h1
         class="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/60"
@@ -28,20 +31,24 @@ const {
     </div>
 
     <div class="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto animate-fade-in">
-      <Card className="group hover:shadow-lg transition-all duration-300">
-        <CardHeader>
-          <CardTitle>Create Travel Note</CardTitle>
-          <CardDescription>Share your travel experiences with others</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p class="text-muted-foreground">
-            Document your journey, add photos, and share your favorite moments with the community.
-          </p>
-        </CardContent>
-        <CardFooter>
-          <CreateNoteCardButton client:load isLoggedIn={!!user} />
-        </CardFooter>
-      </Card>
+      {
+        isCreateNoteEnabled && (
+          <Card className="group hover:shadow-lg transition-all duration-300">
+            <CardHeader>
+              <CardTitle>Create Travel Note</CardTitle>
+              <CardDescription>Share your travel experiences with others</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p class="text-muted-foreground">
+                Document your journey, add photos, and share your favorite moments with the community.
+              </p>
+            </CardContent>
+            <CardFooter>
+              <CreateNoteCardButton client:load isLoggedIn={!!user} />
+            </CardFooter>
+          </Card>
+        )
+      }
 
       <Card className="group hover:shadow-lg transition-all duration-300">
         <CardHeader>

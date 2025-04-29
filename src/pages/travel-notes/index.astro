@@ -6,12 +6,14 @@ import LoginButton from "@/components/LoginButton";
 import { TravelNoteService } from "@/lib/services/travel-note.service";
 import { SuggestionsSkeleton } from "@/components/SuggestionsSkeleton";
 import "@/styles/animations.css";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 const travelNoteService = new TravelNoteService(Astro.locals.supabase);
 
 let notes: TravelNoteDTO[] = [];
 let error: Error | null = null;
 let isLoading = true;
+const isCreateNoteEnabled = isFeatureEnabled("create-travel-note");
 
 try {
   const { data } = await travelNoteService.listTravelNotes({
@@ -43,7 +45,7 @@ const {
         Travel Notes
       </h1>
       <div class="flex items-center gap-4">
-        <CreateNoteButton client:load isLoggedIn={!!user} />
+        {isCreateNoteEnabled && <CreateNoteButton client:load isLoggedIn={!!user} />}
       </div>
     </div>
 
@@ -164,7 +166,7 @@ const {
           </svg>
           <h2 class="text-xl font-semibold mb-2">No travel notes yet</h2>
           <p class="text-muted-foreground">
-            {user
+            {user && isCreateNoteEnabled
               ? "Start sharing your travel experiences by creating your first note!"
               : "Login to start sharing your travel experiences!"}
           </p>
