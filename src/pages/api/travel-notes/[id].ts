@@ -85,7 +85,8 @@ export const PUT: APIRoute = async ({ request, params, locals }) => {
     let body: unknown;
     try {
       body = await request.json();
-    } catch (e) {
+    } catch (error) {
+      console.error("Invalid JSON in request body:", error);
       return new Response(JSON.stringify({ error: "Invalid JSON in request body" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },

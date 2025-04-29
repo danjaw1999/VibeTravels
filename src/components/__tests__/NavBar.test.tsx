@@ -139,8 +139,10 @@ describe("NavBar", () => {
 
     render(<NavBar />);
 
-    // Initially menu is closed
-    expect(screen.queryByTestId("mobile-menu")).not.toBeInTheDocument();
+    // Initially menu is closed (translated off-screen)
+    const mobileMenu = screen.getByTestId("mobile-menu");
+    expect(mobileMenu).toHaveClass("translate-x-full");
+    expect(mobileMenu).not.toHaveClass("translate-x-0");
 
     // Open menu
     const menuButton = screen.getByTestId("open-menu-button");
@@ -148,7 +150,8 @@ describe("NavBar", () => {
 
     // Menu is now open
     await waitFor(() => {
-      expect(screen.getByTestId("mobile-menu")).toBeInTheDocument();
+      expect(screen.getByTestId("mobile-menu")).toHaveClass("translate-x-0");
+      expect(screen.getByTestId("mobile-menu")).not.toHaveClass("translate-x-full");
       expect(screen.getByTestId("mobile-home-link")).toBeInTheDocument();
     });
 
@@ -158,7 +161,8 @@ describe("NavBar", () => {
 
     // Menu is closed again
     await waitFor(() => {
-      expect(screen.queryByTestId("mobile-menu")).not.toBeInTheDocument();
+      expect(screen.getByTestId("mobile-menu")).toHaveClass("translate-x-full");
+      expect(screen.getByTestId("mobile-menu")).not.toHaveClass("translate-x-0");
     });
   });
 

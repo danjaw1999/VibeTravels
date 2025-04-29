@@ -1,4 +1,4 @@
-import { createClient, type Photo, type PhotosWithTotalResults, type ErrorResponse } from "pexels";
+import { createClient, type PhotosWithTotalResults } from "pexels";
 
 // Pexels API key should be in your .env file
 const PEXELS_API_KEY = import.meta.env.PEXELS_API_KEY || "your_pexels_api_key";
@@ -12,7 +12,6 @@ export interface PexelsImage {
   source: string;
 }
 
-let requestsThisHour = 0;
 const MAX_REQUESTS_PER_HOUR = 200;
 const requestTimes: number[] = [];
 

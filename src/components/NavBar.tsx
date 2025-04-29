@@ -5,14 +5,6 @@ import { Link } from "@/components/ui/link";
 import { useAuthStore } from "@/store/authStore";
 import type { User } from "@supabase/supabase-js";
 
-// Definicja typu dla initialUser, dostosowanego do API Supabase
-type SupabaseUser = {
-  id: string;
-  email: string | null;
-  // Pozostałe pola jako indeksowany typ
-  [key: string]: unknown;
-};
-
 interface NavBarProps {
   initialUser?: User | null;
 }

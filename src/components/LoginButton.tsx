@@ -1,6 +1,5 @@
 import { useAuthStore } from "@/store/authStore";
 import { LogIn, LogOut } from "lucide-react";
-import { useEffect } from "react";
 
 export default function LoginButton({ ...props }: React.HTMLAttributes<HTMLElement>) {
   const { user, logout } = useAuthStore();

@@ -4,12 +4,13 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "dev:e2e": "npm run astro dev -- --mode test",
+    "dev:e2e": "npm run astro dev -- --mode integration",
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
+    "prepare": "husky",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx,.astro",
+    "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx,.astro --fix",
     "format": "prettier --write .",
     "test": "vitest",
     "test:watch": "vitest watch",
@@ -66,6 +67,7 @@
     "@typescript-eslint/eslint-plugin": "8.28.0",
     "@typescript-eslint/parser": "8.28.0",
     "@vitejs/plugin-react": "^4.4.0",
+    "@vitest/coverage-v8": "^3.1.1",
     "@vitest/ui": "^3.1.1",
     "dotenv": "^16.5.0",
     "eslint": "9.23.0",
@@ -78,16 +80,16 @@
     "eslint-plugin-react": "7.37.4",
     "eslint-plugin-react-compiler": "19.0.0-beta-aeaed83-20250323",
     "eslint-plugin-react-hooks": "5.2.0",
-    "husky": "9.1.7",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
-    "lint-staged": "15.5.0",
+    "lint-staged": "^15.5.1",
     "msw": "^2.7.4",
     "prettier-plugin-astro": "0.14.1",
     "typescript-eslint": "8.28.0",
     "vitest": "^3.1.1"
   },
   "lint-staged": {
-    "*.{ts,tsx,astro}": [
+    "*.{js,jsx,ts,tsx,astro}": [
       "eslint --fix"
     ],
     "*.{json,css,md}": [

@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from "astro/config";
+import { defineConfig, envField } from "astro/config";
 
 import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
@@ -11,6 +11,18 @@ export default defineConfig({
   output: "server",
   integrations: [react(), sitemap()],
   server: { port: 3000 },
+  env: {
+    schema: {
+      SUPABASE_URL: envField.string({ context: "server", access: "secret" }),
+      SUPABASE_KEY: envField.string({ context: "server", access: "secret" }),
+      SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: "server", access: "secret" }),
+      E2E_USERNAME: envField.string({ context: "server", access: "secret" }),
+      E2E_PASSWORD: envField.string({ context: "server", access: "secret" }),
+      E2E_USERNAME_ID: envField.string({ context: "server", access: "secret" }),
+      OPENAI_API_KEY: envField.string({ context: "server", access: "secret" }),
+      PEXELS_API_KEY: envField.string({ context: "server", access: "secret" }),
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
     resolve: {

@@ -1,16 +1,7 @@
 import type { AstroCookies } from "astro";
-import {
-  createBrowserClient,
-  createServerClient,
-  parseCookieHeader,
-  type CookieOptions,
-  type CookieOptionsWithName,
-} from "@supabase/ssr";
+import { createBrowserClient, createServerClient, parseCookieHeader, type CookieOptionsWithName } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
-
-const SUPABASE_URL = import.meta.env.PUBLIC_SUPABASE_URL;
-const SUPABASE_PUBLIC_KEY = import.meta.env.PUBLIC_SUPABASE_KEY;
-const SUPABASE_SERVICE_ROLE_KEY = import.meta.env.SUPABASE_SERVICE_ROLE_KEY;
+import { SUPABASE_URL, SUPABASE_KEY, SUPABASE_SERVICE_ROLE_KEY } from "astro:env/server";
 
 export const cookieOptions: CookieOptionsWithName = {
   path: "/",
@@ -20,7 +11,7 @@ export const cookieOptions: CookieOptionsWithName = {
 };
 
 export const createSupabaseServerInstance = (context: { headers: Headers; cookies: AstroCookies }) => {
-  const supabase = createServerClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY, {
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
     cookieOptions,
     cookies: {
       // @ts-expect-error - correct implementation per Supabase docs
@@ -56,7 +47,7 @@ export const createSupabaseAdminInstance = (context: { headers: Headers; cookies
 };
 
 export const createSupabaseClient = () => {
-  return createBrowserClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+  return createBrowserClient(SUPABASE_URL, SUPABASE_KEY);
 };
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLIC_KEY);
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);

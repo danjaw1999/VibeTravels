@@ -29,15 +29,15 @@ const linkVariants = cva(
   }
 );
 
-export interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement>, VariantProps<typeof linkVariants> {
-  asChild?: boolean;
-}
+export interface LinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement>, VariantProps<typeof linkVariants> {}
 
-const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
-    return <a className={cn(linkVariants({ variant, size }), className)} ref={ref} {...props} />;
-  }
-);
+const Link = React.forwardRef<HTMLAnchorElement, LinkProps>(({ className, variant, size, children, ...props }, ref) => {
+  return (
+    <a className={cn(linkVariants({ variant, size }), className)} ref={ref} {...props}>
+      {children}
+    </a>
+  );
+});
 
 Link.displayName = "Link";
 
