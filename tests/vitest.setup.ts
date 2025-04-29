@@ -11,10 +11,6 @@ expect.extend(matchers);
 global.TextEncoder = NodeTextEncoder;
 global.TextDecoder = NodeTextDecoder as typeof global.TextDecoder;
 
-if (!process.env.PUBLIC_ENV_NAME) {
-  process.env.PUBLIC_ENV_NAME = import.meta.env.PUBLIC_ENV_NAME;
-}
-
 // Mock window.matchMedia
 Object.defineProperty(window, "matchMedia", {
   writable: true,
