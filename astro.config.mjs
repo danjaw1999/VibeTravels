@@ -30,7 +30,6 @@ export default defineConfig({
       E2E_USERNAME_ID: envField.string({ context: "server", access: "secret" }),
       OPENAI_API_KEY: envField.string({ context: "server", access: "secret" }),
       PEXELS_API_KEY: envField.string({ context: "server", access: "secret" }),
-      PUBLIC_ENV_NAME: envField.string({ context: "server", access: "public" }),
     },
   },
   vite: {
