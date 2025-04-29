@@ -3,6 +3,7 @@ import { travelNoteQuerySchema } from "@/lib/schemas/travel-note-query.schema";
 import { TravelNoteService } from "@/lib/services/travel-note.service";
 import { createTravelNoteSchema } from "@/lib/schemas/travel-note.schema";
 import { z } from "zod";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 export const prerender = false;
 
@@ -22,10 +23,15 @@ export const GET: APIRoute = async ({ request, locals }) => {
         error: authError,
       } = await locals.supabase.auth.getUser();
       if (authError || !user?.id) {
-        return new Response(JSON.stringify({ error: "Authentication required to view private notes" }), {
-          status: 401,
-          headers: { "Content-Type": "application/json" },
-        });
+        return new Response(
+          JSON.stringify({
+            error: "Authentication required to view private notes",
+          }),
+          {
+            status: 401,
+            headers: { "Content-Type": "application/json" },
+          }
+        );
       }
     }
 
@@ -79,6 +85,16 @@ export const GET: APIRoute = async ({ request, locals }) => {
 // POST /api/travel-notes - Create new travel note (authenticated only)
 export const POST: APIRoute = async ({ request, locals, redirect }) => {
   try {
+    // Check if create-travel-note feature is enabled
+    if (!isFeatureEnabled("create-travel-note")) {
+      return new Response(
+        JSON.stringify({
+          error: "Creating travel notes is currently disabled",
+        }),
+        { status: 403 }
+      );
+    }
+
     if (!locals.user) {
       return new Response(JSON.stringify({ message: "Unauthorized" }), {
         status: 401,

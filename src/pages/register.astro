@@ -2,6 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import { RegisterForm } from "../components/RegisterForm";
 import { createSupabaseServerInstance } from "@/db/supabase";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+
+// Check if auth feature is enabled
+if (!isFeatureEnabled("auth")) {
+  return Astro.redirect("/", 302);
+}
 
 const supabase = createSupabaseServerInstance({
   cookies: Astro.cookies,
