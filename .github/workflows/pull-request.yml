@@ -70,9 +70,13 @@ jobs:
 
       - name: Build project
         run: npm run build
+        env:
+          NODE_ENV: integration
 
       - name: Run unit tests with coverage
         run: npm run test:coverage
+        env:
+          NODE_ENV: integration
 
       - name: Upload test coverage
         uses: actions/upload-artifact@v4
