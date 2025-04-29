@@ -15,18 +15,18 @@ const ENV_FEATURE_FLAGS: Record<EnvironmentName, FeatureFlags> = {
   },
   integration: {
     auth: true,
-    "create-travel-note": false,
+    "create-travel-note": true,
     "restore-password": false,
   },
   prod: {
-    auth: false,
-    "create-travel-note": false,
+    auth: true,
+    "create-travel-note": true,
     "restore-password": false,
   },
 };
 
 export function getCurrentEnv(): EnvironmentName | null {
-  const envFromConfig = import.meta.env.PUBLIC_ENV_NAME;
+  const envFromConfig = import.meta.env.PUBLIC_ENV_NAME || null;
   if (envFromConfig === "local" || envFromConfig === "integration" || envFromConfig === "prod") {
     return envFromConfig as EnvironmentName;
   }

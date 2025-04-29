@@ -28,10 +28,15 @@ vi.mock("@/db/supabase", () => ({
   },
 }));
 
+vi.mock("@/lib/featureFlags", () => ({
+  isFeatureEnabled: vi.fn((feature: string) => feature === "auth"),
+}));
+
 // Importy testowanych komponentów i modułów - po mockach
 import NavBar from "../NavBar";
 import { supabase } from "@/db/supabase";
 import { useAuthStore } from "@/store/authStore";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 import type { User } from "@supabase/supabase-js";
 
 describe("NavBar", () => {
@@ -58,6 +63,9 @@ describe("NavBar", () => {
     // Reset window size to desktop
     window.innerWidth = 1024;
     window.dispatchEvent(new Event("resize"));
+
+    // Enable auth feature by default
+    vi.mocked(isFeatureEnabled).mockImplementation((feature: string) => feature === "auth");
   });
 
   it("renders the navbar with logo and links", async () => {
@@ -74,7 +82,7 @@ describe("NavBar", () => {
     });
   });
 
-  it("shows login and register buttons when user is not logged in", async () => {
+  it("shows login and register buttons when user is not logged in and auth is enabled", async () => {
     render(<NavBar />);
 
     await waitFor(() => {
@@ -83,6 +91,18 @@ describe("NavBar", () => {
       expect(screen.getByTestId("register-button")).toBeInTheDocument();
       expect(screen.queryByTestId("add-place-link")).not.toBeInTheDocument();
       expect(screen.queryByTestId("profile-link")).not.toBeInTheDocument();
+    });
+  });
+
+  it("does not show auth-related elements when auth is disabled", async () => {
+    vi.mocked(isFeatureEnabled).mockImplementation(() => false);
+    render(<NavBar />);
+
+    await waitFor(() => {
+      expect(screen.queryByTestId("guest-menu")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("login-link")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("register-button")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("logged-in-menu")).not.toBeInTheDocument();
     });
   });
 
@@ -167,9 +187,6 @@ describe("NavBar", () => {
   });
 
   it("updates UI when auth state changes", async () => {
-    // Zamiast próbować aktualizować istniejący komponent, wyrenderujmy go ponownie
-    // z innym stanem, co jest bardziej wiarygodnym sposobem testowania
-
     // Najpierw sprawdzamy, czy UI wyświetla poprawnie stan niezalogowany
     const { unmount } = render(<NavBar />);
 
