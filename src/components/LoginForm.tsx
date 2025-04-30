@@ -5,6 +5,7 @@ import type { LoginFormData } from "@/lib/types/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import AuthInput from "./AuthInput";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 interface LoginFormProps {
   redirectTo: string;
@@ -82,15 +83,17 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
             {...register("password")}
           />
 
-          <div className="flex items-center justify-end">
-            <a
-              href="/auth/reset-password"
-              className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
-              data-testid="reset-password-link"
-            >
-              Nie pamiętasz hasła?
-            </a>
-          </div>
+          {isFeatureEnabled("restore-password") && (
+            <div className="flex items-center justify-end">
+              <a
+                href="/auth/reset-password"
+                className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
+                data-testid="reset-password-link"
+              >
+                Nie pamiętasz hasła?
+              </a>
+            </div>
+          )}
 
           <button
             type="submit"

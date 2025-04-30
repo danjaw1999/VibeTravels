@@ -56,11 +56,27 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Create .env.integration file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env.integration
+          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env.integration
+          echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.integration
+          echo "E2E_USERNAME_ID=${{ secrets.E2E_USERNAME_ID }}" >> .env.integration
+          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.integration
+          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}" >> .env.integration
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.integration
+          echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> .env.integration
+          echo "PUBLIC_ENV_NAME=${{ secrets.PUBLIC_ENV_NAME }}" >> .env.integration
+
       - name: Build project
         run: npm run build
+        env:
+          NODE_ENV: integration
 
       - name: Run unit tests with coverage
         run: npm run test:coverage
+        env:
+          NODE_ENV: integration
 
       - name: Upload test coverage
         uses: actions/upload-artifact@v4
@@ -103,6 +119,7 @@ jobs:
           echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}" >> .env.integration
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.integration
           echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> .env.integration
+          echo "PUBLIC_ENV_NAME=${{ secrets.PUBLIC_ENV_NAME }}" >> .env.integration
 
       - name: Generate auth credentials
         run: npx playwright test auth.setup.ts

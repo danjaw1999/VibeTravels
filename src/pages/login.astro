@@ -2,6 +2,12 @@
 import Layout from "../layouts/Layout.astro";
 import { createSupabaseServerInstance } from "@/db/supabase";
 import LoginForm from "@/components/LoginForm";
+import { isFeatureEnabled } from "@/lib/featureFlags";
+
+// Check if auth feature is enabled
+if (!isFeatureEnabled("auth")) {
+  return Astro.redirect("/", 302);
+}
 
 // Create server-side Supabase client
 const supabase = createSupabaseServerInstance({
@@ -25,7 +31,7 @@ const title = "Logowanie | VibeTravels";
 ---
 
 <Layout title={title}>
-  <main class="container mx-auto px-4 py-8 min-h-screen flex items-center justify-center" transition:animate="slide">
+  <main class="container mx-auto px-4 py-8 flex items-center justify-center" transition:animate="slide">
     <LoginForm client:load redirectTo="/" />
   </main>
 </Layout>

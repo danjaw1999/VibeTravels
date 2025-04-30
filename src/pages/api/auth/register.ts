@@ -1,15 +1,26 @@
 import type { APIRoute } from "astro";
 import { createSupabaseServerInstance } from "@/db/supabase";
+import { isFeatureEnabled } from "@/lib/featureFlags";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
   try {
+    // Check if auth feature is enabled
+    if (!isFeatureEnabled("auth")) {
+      return new Response(JSON.stringify({ error: "Authentication is currently disabled" }), {
+        status: 403,
+      });
+    }
+
     const { email, password } = await request.json();
 
     if (!email || !password) {
       return new Response(JSON.stringify({ error: "Email, password are required" }), { status: 400 });
     }
 
-    const supabase = createSupabaseServerInstance({ cookies, headers: request.headers });
+    const supabase = createSupabaseServerInstance({
+      cookies,
+      headers: request.headers,
+    });
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
@@ -20,7 +31,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     });
 
     if (authError) {
-      return new Response(JSON.stringify({ error: authError.message }), { status: 400 });
+      return new Response(JSON.stringify({ error: authError.message }), {
+        status: 400,
+      });
     }
 
     await supabase.auth.signInWithPassword({
@@ -28,7 +41,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       password,
     });
 
-    return new Response(JSON.stringify({ user: authData.user }), { status: 200 });
+    return new Response(JSON.stringify({ user: authData.user }), {
+      status: 200,
+    });
   } catch (err) {
     console.error("Signup error:", err);
     return new Response(JSON.stringify({ error: "An unexpected error occurred" }), { status: 500 });
