@@ -1,8 +1,6 @@
-// @ts-check
 import { defineConfig, envField } from "astro/config";
 
 import react from "@astrojs/react";
-import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 import cloudflare from "@astrojs/cloudflare";
 
@@ -10,7 +8,7 @@ import cloudflare from "@astrojs/cloudflare";
 export default defineConfig({
   output: "server",
   adapter: cloudflare(),
-  integrations: [react(), sitemap()],
+  integrations: [react()],
   server: { port: 3000 },
   experimental: {
     session: true,
@@ -25,11 +23,6 @@ export default defineConfig({
       SUPABASE_URL: envField.string({ context: "server", access: "secret" }),
       SUPABASE_KEY: envField.string({ context: "server", access: "secret" }),
       SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: "server", access: "secret" }),
-      E2E_USERNAME: envField.string({ context: "server", access: "secret" }),
-      E2E_PASSWORD: envField.string({ context: "server", access: "secret" }),
-      E2E_USERNAME_ID: envField.string({ context: "server", access: "secret" }),
-      OPENAI_API_KEY: envField.string({ context: "server", access: "secret" }),
-      PEXELS_API_KEY: envField.string({ context: "server", access: "secret" }),
     },
   },
   vite: {
@@ -42,6 +35,7 @@ export default defineConfig({
         "@lib": "/src/lib",
         "@assets": "/src/assets",
         "@db": "/src/db",
+        ...(import.meta.env.PROD ? { "react-dom/server": "react-dom/server.edge" } : {}),
       },
     },
   },
