@@ -13,6 +13,17 @@ const suggestionsCache = new Map<string, CacheEntry>();
 
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
+    // Debug environment variables
+    console.log("Environment check:", {
+      hasOpenAiKey: !!import.meta.env.OPENAI_API_KEY,
+      hasSupabaseUrl: !!import.meta.env.PUBLIC_SUPABASE_URL,
+      hasSupabaseAnonKey: !!import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+      hasPexelsApiKey: !!import.meta.env.PEXELS_API_KEY,
+      mode: import.meta.env.MODE,
+      prod: import.meta.env.PROD,
+      dev: import.meta.env.DEV,
+    });
+
     if (!locals.supabase || !locals.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -28,16 +39,51 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
+    // Check if required environment variables are present
+    if (!import.meta.env.OPENAI_API_KEY) {
+      console.error("OpenAI API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: OpenAI API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!import.meta.env.PEXELS_API_KEY) {
+      console.error("Pexels API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: Pexels API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Check cache first
     const cacheKey = `${id}-${locals.user.id}`;
     const cachedEntry = suggestionsCache.get(cacheKey);
     const now = Date.now();
 
     if (cachedEntry && now - cachedEntry.timestamp < CACHE_TTL) {
-      return new Response(JSON.stringify({ suggestions: cachedEntry.suggestions, fromCache: true }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          suggestions: cachedEntry.suggestions,
+          fromCache: true,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Pobierz travel note

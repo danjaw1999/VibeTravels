@@ -16,6 +16,9 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<AttractionSuggestionDTO[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 2000; // 2 seconds
 
   const generateSuggestions = useCallback(async () => {
     try {
@@ -23,46 +26,78 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
       setError(null);
 
       const response = await fetch(`/api/travel-notes/${travelNote.id}/attractions/generate`);
-      const contentType = response.headers.get("content-type");
 
       if (!response.ok) {
-        if (contentType?.includes("application/json")) {
-          const data = await response.json();
-          throw new Error(data.error || "Failed to generate suggestions");
-        } else {
+        // Handle 500 errors specifically
+        if (response.status === 500) {
           const text = await response.text();
+          console.error("Server error response:", text);
+
+          // If we haven't exceeded max retries and the response is empty, retry
+          if ((!text || text.trim() === "") && retryCount < MAX_RETRIES) {
+            setRetryCount((prev) => prev + 1);
+            console.log(`Retrying request (${retryCount + 1}/${MAX_RETRIES})...`);
+
+            // Wait before retrying
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+            throw new Error("RETRY"); // Special error to trigger retry
+          }
+
+          throw new Error(
+            "Server error: Failed to generate suggestions. Please try again later. " +
+              "If the problem persists, try refreshing the page."
+          );
+        }
+
+        // Handle other errors
+        const text = await response.text();
+        let errorMessage = "Failed to generate suggestions";
+
+        try {
+          const data = JSON.parse(text);
+          errorMessage = data.error || errorMessage;
+        } catch {
           console.error("Non-JSON error response:", text);
-          throw new Error("Server returned an invalid response");
         }
+
+        throw new Error(errorMessage);
       }
 
-      if (!contentType?.includes("application/json")) {
-        console.error("Invalid content type:", contentType);
-        throw new Error("Server returned an invalid response type");
-      }
+      // Reset retry count on successful response
+      setRetryCount(0);
 
-      const text = await response.text();
-      if (!text) {
-        throw new Error("Empty response from server");
-      }
-
+      let data: { suggestions: AttractionSuggestionDTO[] };
       try {
-        const data = JSON.parse(text);
-        if (!data.suggestions || !Array.isArray(data.suggestions)) {
-          throw new Error("Invalid response format");
-        }
-        setSuggestions(data.suggestions);
-      } catch (parseError) {
-        console.error("JSON parse error:", parseError, "Response text:", text);
-        throw new Error("Failed to parse server response");
+        data = await response.json();
+      } catch (e) {
+        console.error("Failed to parse JSON response");
+        throw new Error("Invalid response format from server");
       }
+
+      if (!data.suggestions || !Array.isArray(data.suggestions)) {
+        console.error("Invalid response structure:", data);
+        throw new Error("Invalid response format: missing suggestions");
+      }
+
+      setSuggestions(data.suggestions);
     } catch (err) {
+      // If this is a retry error, try again
+      if (err instanceof Error && err.message === "RETRY") {
+        generateSuggestions();
+        return;
+      }
+
       setError(err instanceof Error ? err.message : "Failed to generate suggestions");
       console.error("Error generating suggestions:", err);
     } finally {
       setIsLoading(false);
     }
-  }, [travelNote.id]);
+  }, [travelNote.id, retryCount]);
+
+  // Reset retry count when component mounts or unmounts
+  useEffect(() => {
+    setRetryCount(0);
+  }, []); // Empty dependency array since we only want this on mount/unmount
 
   const handleCheckboxChange = (suggestionId: string) => {
     const newSelected = new Set(selectedIds);
@@ -106,8 +141,18 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
         });
 
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || "Failed to add attractions");
+          const text = await response.text();
+          let errorMessage = "Failed to add attractions";
+          try {
+            const data = JSON.parse(text);
+            errorMessage = data.message || data.error || errorMessage;
+          } catch {
+            if (response.status === 500) {
+              errorMessage = "Server error: Failed to add attractions. Please try again later.";
+            }
+            console.error("Error response:", text);
+          }
+          throw new Error(errorMessage);
         }
 
         window.location.reload();

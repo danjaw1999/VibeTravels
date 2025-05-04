@@ -77,7 +77,7 @@ export class TravelNoteService {
         .insert({
           name: command.name,
           description: command.description,
-          is_public: command.is_public ?? true,
+          is_public: command.is_public ?? false,
           user_id: session.user.id,
         })
         .select("*, attractions(*)")
