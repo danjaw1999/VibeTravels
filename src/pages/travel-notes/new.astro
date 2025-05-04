@@ -57,7 +57,8 @@ if (!user) {
         </div>
 
         <p class="text-lg text-muted-foreground">
-          Share your travel experiences with the community. Add details, photos, and make your story come alive.
+          Share your travel experiences with the community. Add details, photos, and make your story come alive. Write
+          in English :D
         </p>
 
         <div class="bg-card rounded-lg shadow-lg p-6 space-y-6">
@@ -80,6 +81,7 @@ if (!user) {
                 }
 
                 const result = await response.json();
+                console.log("Result:", result);
                 window.location.href = `/travel-notes/${result.id}`;
               } catch (error) {
                 console.error("Error creating travel note:", error);

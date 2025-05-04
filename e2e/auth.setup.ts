@@ -6,11 +6,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const authFile = path.join(__dirname, "./.auth/user.json");
 
-const E2E_USERNAME = process.env.E2E_USERNAME;
-const E2E_PASSWORD = process.env.E2E_PASSWORD;
+const PUBLIC_E2E_USERNAME = process.env.PUBLIC_E2E_USERNAME;
+const PUBLIC_E2E_PASSWORD = process.env.PUBLIC_E2E_PASSWORD;
 
-if (!E2E_USERNAME || !E2E_PASSWORD) {
-  throw new Error("E2E_USERNAME and E2E_PASSWORD must be set");
+if (!PUBLIC_E2E_USERNAME || !PUBLIC_E2E_PASSWORD) {
+  throw new Error("PUBLIC_E2E_USERNAME and PUBLIC_E2E_PASSWORD must be set");
 }
 
 setup("authenticate", async ({ page }) => {
@@ -21,15 +21,15 @@ setup("authenticate", async ({ page }) => {
   const emailInput = page.getByTestId("email-input");
   await emailInput.waitFor({ state: "visible" });
   await emailInput.click();
-  await emailInput.fill(E2E_USERNAME);
-  await expect(emailInput).toHaveValue(E2E_USERNAME);
+  await emailInput.fill(PUBLIC_E2E_USERNAME);
+  await expect(emailInput).toHaveValue(PUBLIC_E2E_USERNAME);
 
   // Wait for and fill password input
   const passwordInput = page.getByTestId("password-input");
   await passwordInput.waitFor({ state: "visible" });
   await passwordInput.click();
-  await passwordInput.fill(E2E_PASSWORD);
-  await expect(passwordInput).toHaveValue(E2E_PASSWORD);
+  await passwordInput.fill(PUBLIC_E2E_PASSWORD);
+  await expect(passwordInput).toHaveValue(PUBLIC_E2E_PASSWORD);
 
   // Wait for and click submit button
   const submitButton = page.getByTestId("login-submit-button");

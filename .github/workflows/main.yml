@@ -70,16 +70,16 @@ jobs:
 
       - name: Build Astro site
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          PUBLIC_SUPABASE_URL: ${{ secrets.PUBLIC_SUPABASE_URL }}
+          PUBLIC_SUPABASE_KEY: ${{ secrets.PUBLIC_SUPABASE_KEY }}
+          PUBLIC_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.PUBLIC_SUPABASE_SERVICE_ROLE_KEY }}
           PUBLIC_ENV_NAME: ${{ secrets.PUBLIC_ENV_NAME }}
         run: npm run build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ secrets.PUBLIC_CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.PUBLIC_CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name='vibetravels'
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}

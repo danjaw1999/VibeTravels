@@ -54,6 +54,14 @@ export class TravelNoteService {
   }
 
   async createTravelNote(command: CreateTravelNoteCommand): Promise<TravelNoteDTO> {
+    console.log("Request debug info:", {
+      hasOpenAiKey: !!import.meta.env.PUBLIC_OPENAI_API_KEY,
+      hasSupabaseUrl: !!import.meta.env.PUBLIC_SUPABASE_URL,
+      hasSupabaseKey: !!import.meta.env.PUBLIC_SUPABASE_KEY,
+      hasPexelsApiKey: !!import.meta.env.PUBLIC_PEXELS_API_KEY,
+      prod: import.meta.env.PROD,
+      dev: import.meta.env.DEV,
+    });
     try {
       // Check for session
       const {
@@ -77,7 +85,7 @@ export class TravelNoteService {
         .insert({
           name: command.name,
           description: command.description,
-          is_public: command.is_public ?? true,
+          is_public: command.is_public ?? false,
           user_id: session.user.id,
         })
         .select("*, attractions(*)")

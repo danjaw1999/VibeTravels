@@ -1,9 +1,9 @@
 import { createClient, type PhotosWithTotalResults } from "pexels";
 
 // Pexels API key should be in your .env file
-const PEXELS_API_KEY = import.meta.env.PEXELS_API_KEY || "your_pexels_api_key";
+const PUBLIC_PEXELS_API_KEY = import.meta.env.PUBLIC_PEXELS_API_KEY || "your_pexels_api_key";
 
-export const pexels = createClient(PEXELS_API_KEY);
+export const pexels = createClient(PUBLIC_PEXELS_API_KEY);
 
 export interface PexelsImage {
   url: string;
