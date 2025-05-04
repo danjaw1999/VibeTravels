@@ -23,11 +23,11 @@ export function loadEnvironmentVariables() {
  */
 export function logEnvironmentVariables(context = "default") {
   console.log(`[${context}] Available environment variables:`, {
-    E2E_USERNAME: !!process.env.E2E_USERNAME,
-    E2E_USERNAME_ID: !!process.env.E2E_USERNAME_ID,
-    E2E_PASSWORD_EXISTS: !!process.env.E2E_PASSWORD,
-    SUPABASE_URL_EXISTS: !!process.env.SUPABASE_URL,
-    SUPABASE_KEY_EXISTS: !!process.env.SUPABASE_KEY,
+    PUBLIC_E2E_USERNAME: !!process.env.PUBLIC_E2E_USERNAME,
+    PUBLIC_E2E_USERNAME_ID: !!process.env.PUBLIC_E2E_USERNAME_ID,
+    PUBLIC_E2E_PASSWORD_EXISTS: !!process.env.PUBLIC_E2E_PASSWORD,
+    PUBLIC_SUPABASE_URL_EXISTS: !!process.env.PUBLIC_SUPABASE_URL,
+    PUBLIC_SUPABASE_KEY_EXISTS: !!process.env.PUBLIC_SUPABASE_KEY,
   });
 }
 
@@ -35,12 +35,12 @@ export function logEnvironmentVariables(context = "default") {
  * Funkcja zwracająca URL Supabase, sprawdzając różne możliwe nazwy zmiennych środowiskowych
  */
 export function getSupabaseUrl(): string {
-  return process.env.SUPABASE_URL || process.env.SUPABASE_URL || "";
+  return process.env.PUBLIC_SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL || "";
 }
 
 /**
  * Funkcja zwracająca klucz Supabase, sprawdzając różne możliwe nazwy zmiennych środowiskowych
  */
 export function getSupabaseKey(): string {
-  return process.env.SUPABASE_KEY || process.env.SUPABASE_KEY || "";
+  return process.env.PUBLIC_SUPABASE_KEY || process.env.PUBLIC_SUPABASE_KEY || "";
 }

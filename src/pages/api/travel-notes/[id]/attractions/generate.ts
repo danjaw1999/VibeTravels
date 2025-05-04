@@ -12,7 +12,13 @@ interface CacheEntry {
 const suggestionsCache = new Map<string, CacheEntry>();
 
 export const GET: APIRoute = async ({ params, locals }) => {
+  const startTime = Date.now();
   try {
+    console.log("[Generate] Starting request:", {
+      noteId: params.id,
+      timestamp: new Date().toISOString(),
+    });
+
     if (!locals.supabase || !locals.user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -26,6 +32,35 @@ export const GET: APIRoute = async ({ params, locals }) => {
         status: 400,
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Check if required environment variables are present
+    if (!import.meta.env.PUBLIC_OPENAI_API_KEY) {
+      console.error("OpenAI API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: OpenAI API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!import.meta.env.PUBLIC_PEXELS_API_KEY) {
+      console.error("Pexels API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: Pexels API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
     // Check cache first
@@ -48,7 +83,10 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     // Pobierz travel note
     const travelNoteService = new TravelNoteService(locals.supabase);
+    console.log("[Generate] Fetching travel note...");
+    const fetchStart = Date.now();
     const travelNote = await travelNoteService.getTravelNoteById(id);
+    console.log(`[Generate] Travel note fetched in ${Date.now() - fetchStart}ms`);
 
     if (!travelNote) {
       return new Response(JSON.stringify({ error: "Travel note not found" }), {
@@ -67,6 +105,8 @@ export const GET: APIRoute = async ({ params, locals }) => {
 
     // Generuj sugestie
     const attractionsService = new AttractionsService(locals.supabase);
+    console.log("[Generate] Starting OpenAI request...");
+    const openaiStart = Date.now();
     const suggestions = await attractionsService.generateAttractionSuggestions(
       {
         name: travelNote.name,
@@ -74,6 +114,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       },
       8
     );
+    console.log(`[Generate] OpenAI request completed in ${Date.now() - openaiStart}ms`);
 
     // Cache the results
     suggestionsCache.set(cacheKey, {
@@ -81,15 +122,24 @@ export const GET: APIRoute = async ({ params, locals }) => {
       timestamp: now,
     });
 
-    return new Response(JSON.stringify({ suggestions }), {
+    const totalTime = Date.now() - startTime;
+    console.log(`[Generate] Total request time: ${totalTime}ms`);
+
+    return new Response(JSON.stringify({ suggestions, timing: { total: totalTime } }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error generating suggestions:", error);
+    const totalTime = Date.now() - startTime;
+    console.error("[Generate] Error:", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      timing: { total: totalTime },
+    });
+
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Internal server error",
+        timing: { total: totalTime },
       }),
       {
         status: 500,

@@ -3,22 +3,22 @@ import { z } from "zod";
 export const registerSchema = z.object({
   email: z
     .string()
-    .email("Nieprawidłowy format adresu email")
-    .min(1, "Email jest wymagany")
+    .email("Invalid email format")
+    .min(1, "Email is required")
     .refine(async () => {
       // TODO: Add check for existing email in database
       return true;
-    }, "Ten adres email jest już zajęty"),
+    }, "This email is already taken"),
   password: z
     .string()
-    .min(8, "Hasło musi mieć co najmniej 8 znaków")
-    .regex(/[A-Z]/, "Hasło musi zawierać co najmniej jedną wielką literę")
-    .regex(/[a-z]/, "Hasło musi zawierać co najmniej jedną małą literę")
-    .regex(/[0-9]/, "Hasło musi zawierać co najmniej jedną cyfrę")
-    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Hasło musi zawierać co najmniej jeden znak specjalny (!@#$%^&*(),.?":{}|<>)'),
+    .min(8, "Password must be at least 8 characters long")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(/[!@#$%^&*(),.?":{}|<>]/, 'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)'),
   profileDescription: z
     .string()
-    .max(1000, "Opis profilu nie może przekraczać 1000 znaków")
+    .max(1000, "Profile description cannot exceed 1000 characters")
     .optional()
     .transform((val) => val || ""),
 });
@@ -26,8 +26,8 @@ export const registerSchema = z.object({
 export type RegisterCommand = z.infer<typeof registerSchema>;
 
 export const loginSchema = z.object({
-  email: z.string().email("Nieprawidłowy format adresu email").min(1, "Email jest wymagany"),
-  password: z.string().min(1, "Hasło jest wymagane"),
+  email: z.string().email("Invalid email format").min(1, "Email is required"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export type LoginCommand = z.infer<typeof loginSchema>;

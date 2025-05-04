@@ -24,101 +24,213 @@ export class AttractionsService {
     limit = 6,
     excludeNames: string[] = []
   ): Promise<AttractionSuggestionDTO[]> {
+    console.log("[AttractionsService] Starting generation...");
+    const startTime = Date.now();
+
+    try {
+      // First, try to get existing attractions with similar names
+      console.log("[AttractionsService] Checking existing attractions...");
+      const { data: existingAttractions } = await this.supabase
+        .from("attractions")
+        .select(
+          "name, description, latitude, longitude, image, image_photographer, image_photographer_url, image_source"
+        )
+        .ilike("name", `%${name.split(" ")[0]}%`)
+        .limit(limit);
+
+      if (existingAttractions?.length === limit) {
+        console.log(`[AttractionsService] Found ${existingAttractions.length} existing attractions`);
+        return existingAttractions.map((attraction) => ({
+          name: attraction.name,
+          description: attraction.description,
+          latitude: attraction.latitude,
+          longitude: attraction.longitude,
+          image: attraction.image
+            ? {
+                url: attraction.image,
+                photographer: attraction.image_photographer || "",
+                photographerUrl: attraction.image_photographer_url || "",
+                source: attraction.image_source || "",
+              }
+            : null,
+          estimatedPrice: "Price information available at location",
+        }));
+      }
+
+      // If not enough existing attractions, generate new ones with OpenAI
+      console.log("[AttractionsService] Generating new attractions with OpenAI...");
+      const openaiStart = Date.now();
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo-1106",
+        messages: [
+          {
+            role: "user",
+            content: this.generatePrompt(name, description, limit, excludeNames),
+          },
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" },
+        max_tokens: 4000,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+      });
+
+      console.log(`[AttractionsService] OpenAI response received in ${Date.now() - openaiStart}ms`);
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("OpenAI returned empty response");
+      }
+
+      const response = await this.parseOpenAIResponse(content, limit);
+
+      // Process images in parallel with a timeout
+      console.log("[AttractionsService] Processing images...");
+      const imageStart = Date.now();
+
+      const attractionsWithImages = await Promise.all(
+        response.attractions.map(async ({ name, description, latitude, longitude, estimatedPrice }) => {
+          try {
+            // Set a timeout for image fetching
+            const imagePromise = this.getAttractionImage(name);
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Image fetch timeout")), 3000)
+            );
+
+            const image = await Promise.race([imagePromise, timeoutPromise]).catch(() => null); // If timeout or error, continue without image
+
+            return {
+              name,
+              description,
+              latitude,
+              longitude,
+              image,
+              estimatedPrice: estimatedPrice || "Price information available at location",
+            };
+          } catch (error) {
+            console.error(`[AttractionsService] Error processing image for ${name}:`, error);
+            // Continue without image if there's an error
+            return {
+              name,
+              description,
+              latitude,
+              longitude,
+              image: null,
+              estimatedPrice: estimatedPrice || "Price information available at location",
+            };
+          }
+        })
+      );
+
+      console.log(`[AttractionsService] Images processed in ${Date.now() - imageStart}ms`);
+      console.log(`[AttractionsService] Total generation time: ${Date.now() - startTime}ms`);
+
+      return attractionsWithImages;
+    } catch (error) {
+      console.error("[AttractionsService] Generation error:", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        timing: { total: Date.now() - startTime },
+      });
+      throw error;
+    }
+  }
+
+  private async getAttractionImage(name: string): Promise<AttractionSuggestionDTO["image"]> {
+    // First check if we have the image cached in the database
+    const { data: existingAttraction } = await this.supabase
+      .from("attractions")
+      .select("image, image_photographer, image_photographer_url, image_source")
+      .eq("name", name)
+      .single();
+
+    if (existingAttraction?.image) {
+      return {
+        url: existingAttraction.image,
+        photographer: existingAttraction.image_photographer || "",
+        photographerUrl: existingAttraction.image_photographer_url || "",
+        source: existingAttraction.image_source || "",
+      };
+    }
+
+    // If not in cache, get from Pexels
+    const englishName = name.match(/\((.*?)\)/)?.[1] || name;
+    return await searchAttractionImage(englishName);
+  }
+
+  private generatePrompt(name: string, description: string, limit: number, excludeNames: string[]): string {
     const excludeContext =
       excludeNames.length > 0
-        ? `\nProszę pominąć te atrakcje, które już zostały zasugerowane: ${excludeNames.join(", ")}`
+        ? `\nPlease exclude these attractions that have already been suggested: ${excludeNames.join(", ")}`
         : "";
 
-    const prompt = `Wygeneruj ${limit} unikalnych sugestii atrakcji turystycznych na podstawie notatki podróżniczej:
-    Tytuł: ${name}
-    Opis: ${description}
+    return `Generate ${limit} unique tourist attraction suggestions based on the travel note:
+    Title: ${name}
+    Description: ${description}
     
-    Zwróć odpowiedź w następującym formacie JSON:
+    Return the response in the following JSON format:
     {
       "attractions": [
         {
-          "name": "Nazwa atrakcji po polsku",
-          "description": "Szczegółowy opis po polsku (minimum 4-5 zdań)",
+          "name": "Attraction name in English",
+          "description": "Detailed description in English (minimum 4-5 sentences)",
           "latitude": 52.2297,
           "longitude": 21.0122,
-          "estimatedPrice": "Zakres cenowy w PLN"
+          "estimatedPrice": "Price range in USD"
         }
       ]
     }
     
-    Wymagania dla każdej atrakcji:
-    1. name: konkretna nazwa ISTNIEJĄCEJ atrakcji w języku polskim (podaj też nazwę w języku angielskim w nawiasie)
-    2. description: szczegółowy opis po polsku zawierający:
-       - Co sprawia, że miejsce jest wyjątkowe (2-3 zdania)
-       - Praktyczne informacje o zwiedzaniu (czas zwiedzania, najlepsze godziny, czy potrzebna rezerwacja)
-       - Informacje o biletach (ceny normalne/ulgowe, darmowe wejścia np. dla dzieci do określonego wieku)
-       - Dodatkowe atrakcje lub udogodnienia (restauracje, sklepy z pamiątkami, dostępność dla niepełnosprawnych)
-    3. estimated price range: dokładny zakres cenowy w formacie:
-       - "Bilet normalny: X zł, ulgowy: Y zł"
-       - "Bezpłatne" (jeśli wstęp jest darmowy)
-       - "Wstęp bezpłatny dla dzieci do X lat"
-    4. coordinates: RZECZYWISTE koordynaty geograficzne tej atrakcji (NIE WYMYŚLAJ ICH)
+    Requirements for each attraction:
+    1. name: specific name of an EXISTING attraction in English
+    2. description: detailed description in English containing:
+       - What makes the place unique (2-3 sentences)
+       - Practical visiting information (visiting time, best hours, if reservation needed)
+       - Ticket information (regular/reduced prices, free entry e.g. for children up to certain age)
+       - Additional attractions or amenities (restaurants, souvenir shops, accessibility)
+    3. estimated price range: exact price range in format:
+       - "Regular ticket: $X, reduced: $Y"
+       - "Free entry"
+       - "Free entry for children under X years"
+    4. coordinates: REAL geographic coordinates of this attraction (DO NOT MAKE THEM UP)
     
-    Skup się na:
-    - Tylko istniejących, rzeczywistych atrakcjach (nie wymyślaj miejsc)
-    - Dokładnych współrzędnych geograficznych dla każdej atrakcji
-    - Unikalnych i interesujących miejscach pasujących do tematu notatki
-    - Mieszance popularnych i mniej znanych atrakcji
-    - Różnorodności cenowej i typach atrakcji
-    - Geograficznie zróżnicowanych lokalizacjach w danym obszarze${excludeContext}
+    Focus on:
+    - Only existing, real attractions (don't make up places)
+    - Exact geographic coordinates for each attraction
+    - Unique and interesting places matching the note's theme
+    - Mix of popular and lesser-known attractions
+    - Price diversity and types of attractions
+    - Geographically diverse locations in the given area${excludeContext}
     
-    WAŻNE: 
-    - Używaj TYLKO rzeczywistych, istniejących atrakcji
-    - Podawaj PRAWDZIWE współrzędne geograficzne dla każdej atrakcji
-    - Upewnij się, że wszystkie opisy są szczegółowe i w języku polskim
-    - Dodaj angielską nazwę w nawiasie dla lepszego wyszukiwania zdjęć
-    - Wszystkie pola są wymagane
-    - Koordynaty muszą być liczbami (nie stringami)
-    - Zwróć dokładnie ${limit} atrakcji
-    
-    Przykład rzeczywistej atrakcji:
-    {
-      "name": "Zamek Królewski w Warszawie (Royal Castle in Warsaw)",
-      "description": "Historyczna rezydencja królów Polski i siedziba Sejmu Rzeczypospolitej Obojga Narodów. Zamek został całkowicie zniszczony podczas II wojny światowej i odbudowany w latach 1971-1984. Dziś jest muzeum prezentującym wspaniałe wnętrza i kolekcje sztuki. Zwiedzanie trwa około 2-3 godziny, najlepiej przyjść zaraz po otwarciu, aby uniknąć tłumów. Zamek jest w pełni dostępny dla osób niepełnosprawnych, posiada windy i podjazdy. Na miejscu znajduje się kawiarnia z widokiem na Wisłę oraz bogato wyposażony sklep z pamiątkami i książkami. Wstęp bezpłatny dla dzieci do lat 16, a w niedziele wstęp wolny dla wszystkich.",
-      "latitude": 52.2478,
-      "longitude": 21.0137,
-      "estimatedPrice": "Bilet normalny: 35 zł, ulgowy: 25 zł, w niedziele wstęp bezpłatny"
-    }`;
+    IMPORTANT: 
+    - Use ONLY real, existing attractions
+    - Provide REAL geographic coordinates for each attraction
+    - Make sure all descriptions are detailed and in English
+    - All fields are required
+    - Coordinates must be numbers (not strings)
+    - Return exactly ${limit} attractions`;
+  }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo-1106",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      response_format: { type: "json_object" },
-      max_tokens: 4000,
-      presence_penalty: 0.1,
-      frequency_penalty: 0.1,
-    });
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error("OpenAI returned empty response");
-    }
-
-    let response: OpenAIAttractionResponse;
+  private async parseOpenAIResponse(content: string, limit: number): Promise<OpenAIAttractionResponse> {
     try {
-      // Upewnij się, że mamy pełną odpowiedź JSON
-      if (!content.trim().endsWith("}")) {
-        console.error("Incomplete JSON response:", content);
-        throw new Error("Received incomplete JSON response from OpenAI");
+      const cleanContent = content.trim().replace(/\n/g, " ");
+      const jsonMatch = cleanContent.match(/\{.*\}/);
+
+      if (!jsonMatch) {
+        console.error("No valid JSON found in response:", cleanContent);
+        throw new Error("No valid JSON found in OpenAI response");
       }
 
-      response = JSON.parse(content) as OpenAIAttractionResponse;
+      const response = JSON.parse(jsonMatch[0]) as OpenAIAttractionResponse;
 
       if (!response.attractions || !Array.isArray(response.attractions)) {
         console.error("Invalid response structure:", response);
         throw new Error("Invalid response structure from OpenAI");
       }
 
-      // Sprawdź czy mamy dokładnie oczekiwaną liczbę atrakcji
       if (response.attractions.length !== limit) {
-        console.error(`Expected ${limit} attractions, got ${response.attractions.length}`);
-        throw new Error(`OpenAI returned incorrect number of attractions`);
+        console.error("Expected " + limit + " attractions, got " + response.attractions.length);
+        throw new Error("OpenAI returned incorrect number of attractions");
       }
 
       for (const attraction of response.attractions) {
@@ -132,68 +244,13 @@ export class AttractionsService {
           console.error("Invalid attraction data:", attraction);
           throw new Error("Invalid attraction data in OpenAI response");
         }
-
-        // Sprawdź czy estimatedPrice nie jest ucięte
-        if (
-          attraction.estimatedPrice.endsWith("...") ||
-          (attraction.estimatedPrice.toLowerCase().startsWith("bezpłat") &&
-            !attraction.estimatedPrice.toLowerCase().includes("bezpłatne") &&
-            !attraction.estimatedPrice.toLowerCase().includes("bezpłatny"))
-        ) {
-          console.error("Truncated estimatedPrice:", attraction.estimatedPrice);
-          throw new Error("Truncated price information in OpenAI response");
-        }
       }
+
+      return response;
     } catch (error) {
-      console.error("Failed to parse or validate OpenAI response:", content);
-      if (error instanceof Error) {
-        throw new Error(`OpenAI response processing failed: ${error.message}`);
-      }
-      throw new Error("Failed to process OpenAI response");
+      console.error("Failed to parse OpenAI response:", content);
+      throw error;
     }
-
-    // Pobierz zdjęcia dla wszystkich atrakcji równolegle
-    const attractionsWithImages = await Promise.all(
-      response.attractions.map(async ({ name, description, latitude, longitude, estimatedPrice }) => {
-        // Najpierw sprawdź czy mamy już zapisane zdjęcie dla tej atrakcji
-        const { data: existingAttraction } = await this.supabase
-          .from("attractions")
-          .select("image, image_photographer, image_photographer_url, image_source")
-          .eq("name", name)
-          .single();
-
-        if (existingAttraction?.image) {
-          return {
-            name,
-            description,
-            latitude,
-            longitude,
-            image: {
-              url: existingAttraction.image,
-              photographer: existingAttraction.image_photographer || "",
-              photographerUrl: existingAttraction.image_photographer_url || "",
-              source: existingAttraction.image_source || "",
-            },
-            estimatedPrice: estimatedPrice || "Cena nieznana",
-          };
-        }
-
-        // Jeśli nie mamy zapisanego zdjęcia, pobierz nowe z Pexels
-        const englishName = name.match(/\((.*?)\)/)?.[1] || name;
-        const pexelsImage = await searchAttractionImage(englishName);
-
-        return {
-          name,
-          description,
-          latitude,
-          longitude,
-          image: pexelsImage,
-          estimatedPrice: estimatedPrice || "Cena nieznana",
-        };
-      })
-    );
-
-    return attractionsWithImages;
   }
 
   async addAttractions(noteId: UUID, userId: UUID, attractions: AttractionCreateInput[]): Promise<AttractionDTO[]> {
