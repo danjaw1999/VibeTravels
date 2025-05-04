@@ -54,6 +54,14 @@ export class TravelNoteService {
   }
 
   async createTravelNote(command: CreateTravelNoteCommand): Promise<TravelNoteDTO> {
+    console.log("Request debug info:", {
+      hasOpenAiKey: !!import.meta.env.OPENAI_API_KEY,
+      hasSupabaseUrl: !!import.meta.env.SUPABASE_URL,
+      hasSupabaseKey: !!import.meta.env.SUPABASE_KEY,
+      hasPexelsApiKey: !!import.meta.env.PEXELS_API_KEY,
+      prod: import.meta.env.PROD,
+      dev: import.meta.env.DEV,
+    });
     try {
       // Check for session
       const {

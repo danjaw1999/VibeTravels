@@ -81,6 +81,7 @@ if (!user) {
                 }
 
                 const result = await response.json();
+                console.log("Result:", result);
                 window.location.href = `/travel-notes/${result.id}`;
               } catch (error) {
                 console.error("Error creating travel note:", error);
