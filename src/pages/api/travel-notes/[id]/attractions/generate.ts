@@ -16,12 +16,9 @@ export const GET: APIRoute = async ({ params, locals }) => {
     // Debug environment variables
     console.log("Environment check:", {
       hasOpenAiKey: !!import.meta.env.OPENAI_API_KEY,
-      hasSupabaseUrl: !!import.meta.env.PUBLIC_SUPABASE_URL,
-      hasSupabaseAnonKey: !!import.meta.env.PUBLIC_SUPABASE_ANON_KEY,
+      hasSupabaseUrl: !!import.meta.env.SUPABASE_URL,
+      hasSupabaseAnonKey: !!import.meta.env.SUPABASE_KEY,
       hasPexelsApiKey: !!import.meta.env.PEXELS_API_KEY,
-      mode: import.meta.env.MODE,
-      prod: import.meta.env.PROD,
-      dev: import.meta.env.DEV,
     });
 
     if (!locals.supabase || !locals.user) {
