@@ -22,7 +22,6 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
   const RETRY_DELAY = 2000; // 2 seconds
 
   const generateSuggestions = useCallback(async () => {
-    // If we've already exhausted retries, don't try again
     if (hasExhaustedRetries) {
       setError("Maximum retry attempts reached. Please refresh the page to try again.");
       return;

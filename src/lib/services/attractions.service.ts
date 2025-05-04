@@ -24,12 +24,147 @@ export class AttractionsService {
     limit = 6,
     excludeNames: string[] = []
   ): Promise<AttractionSuggestionDTO[]> {
+    console.log("[AttractionsService] Starting generation...");
+    const startTime = Date.now();
+
+    try {
+      // First, try to get existing attractions with similar names
+      console.log("[AttractionsService] Checking existing attractions...");
+      const { data: existingAttractions } = await this.supabase
+        .from("attractions")
+        .select(
+          "name, description, latitude, longitude, image, image_photographer, image_photographer_url, image_source"
+        )
+        .ilike("name", `%${name.split(" ")[0]}%`)
+        .limit(limit);
+
+      if (existingAttractions?.length === limit) {
+        console.log(`[AttractionsService] Found ${existingAttractions.length} existing attractions`);
+        return existingAttractions.map((attraction) => ({
+          name: attraction.name,
+          description: attraction.description,
+          latitude: attraction.latitude,
+          longitude: attraction.longitude,
+          image: attraction.image
+            ? {
+                url: attraction.image,
+                photographer: attraction.image_photographer || "",
+                photographerUrl: attraction.image_photographer_url || "",
+                source: attraction.image_source || "",
+              }
+            : null,
+          estimatedPrice: "Price information available at location",
+        }));
+      }
+
+      // If not enough existing attractions, generate new ones with OpenAI
+      console.log("[AttractionsService] Generating new attractions with OpenAI...");
+      const openaiStart = Date.now();
+
+      const completion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo-1106",
+        messages: [
+          {
+            role: "user",
+            content: this.generatePrompt(name, description, limit, excludeNames),
+          },
+        ],
+        temperature: 0.7,
+        response_format: { type: "json_object" },
+        max_tokens: 4000,
+        presence_penalty: 0.1,
+        frequency_penalty: 0.1,
+      });
+
+      console.log(`[AttractionsService] OpenAI response received in ${Date.now() - openaiStart}ms`);
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("OpenAI returned empty response");
+      }
+
+      const response = await this.parseOpenAIResponse(content, limit);
+
+      // Process images in parallel with a timeout
+      console.log("[AttractionsService] Processing images...");
+      const imageStart = Date.now();
+
+      const attractionsWithImages = await Promise.all(
+        response.attractions.map(async ({ name, description, latitude, longitude, estimatedPrice }) => {
+          try {
+            // Set a timeout for image fetching
+            const imagePromise = this.getAttractionImage(name);
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Image fetch timeout")), 3000)
+            );
+
+            const image = await Promise.race([imagePromise, timeoutPromise]).catch(() => null); // If timeout or error, continue without image
+
+            return {
+              name,
+              description,
+              latitude,
+              longitude,
+              image,
+              estimatedPrice: estimatedPrice || "Price information available at location",
+            };
+          } catch (error) {
+            console.error(`[AttractionsService] Error processing image for ${name}:`, error);
+            // Continue without image if there's an error
+            return {
+              name,
+              description,
+              latitude,
+              longitude,
+              image: null,
+              estimatedPrice: estimatedPrice || "Price information available at location",
+            };
+          }
+        })
+      );
+
+      console.log(`[AttractionsService] Images processed in ${Date.now() - imageStart}ms`);
+      console.log(`[AttractionsService] Total generation time: ${Date.now() - startTime}ms`);
+
+      return attractionsWithImages;
+    } catch (error) {
+      console.error("[AttractionsService] Generation error:", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        timing: { total: Date.now() - startTime },
+      });
+      throw error;
+    }
+  }
+
+  private async getAttractionImage(name: string): Promise<AttractionSuggestionDTO["image"]> {
+    // First check if we have the image cached in the database
+    const { data: existingAttraction } = await this.supabase
+      .from("attractions")
+      .select("image, image_photographer, image_photographer_url, image_source")
+      .eq("name", name)
+      .single();
+
+    if (existingAttraction?.image) {
+      return {
+        url: existingAttraction.image,
+        photographer: existingAttraction.image_photographer || "",
+        photographerUrl: existingAttraction.image_photographer_url || "",
+        source: existingAttraction.image_source || "",
+      };
+    }
+
+    // If not in cache, get from Pexels
+    const englishName = name.match(/\((.*?)\)/)?.[1] || name;
+    return await searchAttractionImage(englishName);
+  }
+
+  private generatePrompt(name: string, description: string, limit: number, excludeNames: string[]): string {
     const excludeContext =
       excludeNames.length > 0
         ? `\nPlease exclude these attractions that have already been suggested: ${excludeNames.join(", ")}`
         : "";
 
-    const prompt = `Generate ${limit} unique tourist attraction suggestions based on the travel note:
+    return `Generate ${limit} unique tourist attraction suggestions based on the travel note:
     Title: ${name}
     Description: ${description}
     
@@ -73,55 +208,29 @@ export class AttractionsService {
     - Make sure all descriptions are detailed and in English
     - All fields are required
     - Coordinates must be numbers (not strings)
-    - Return exactly ${limit} attractions
-    
-    Example of a real attraction:
-    {
-      "name": "Tower of London",
-      "description": "Historic castle and fortress in central London. The Tower has served as a royal palace, prison, treasury, and now houses the Crown Jewels. Visiting takes about 2-3 hours, best to arrive at opening to avoid crowds. The Tower is fully accessible with elevators and ramps. On-site facilities include a café with river views and a well-stocked gift shop with books and souvenirs. Free guided tours by Yeoman Warders are included in the ticket price.",
-      "latitude": 51.5081,
-      "longitude": -0.0759,
-      "estimatedPrice": "Regular ticket: $30, reduced: $15, free for children under 5"
-    }`;
+    - Return exactly ${limit} attractions`;
+  }
 
-    const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo-1106",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.7,
-      response_format: { type: "json_object" },
-      max_tokens: 4000,
-      presence_penalty: 0.1,
-      frequency_penalty: 0.1,
-    });
-
-    const content = completion.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error("OpenAI returned empty response");
-    }
-
-    let response: OpenAIAttractionResponse;
+  private async parseOpenAIResponse(content: string, limit: number): Promise<OpenAIAttractionResponse> {
     try {
-      // Clean up the response content
       const cleanContent = content.trim().replace(/\n/g, " ");
-
-      // Try to find the complete JSON object
       const jsonMatch = cleanContent.match(/\{.*\}/);
+
       if (!jsonMatch) {
         console.error("No valid JSON found in response:", cleanContent);
         throw new Error("No valid JSON found in OpenAI response");
       }
 
-      response = JSON.parse(jsonMatch[0]) as OpenAIAttractionResponse;
+      const response = JSON.parse(jsonMatch[0]) as OpenAIAttractionResponse;
 
       if (!response.attractions || !Array.isArray(response.attractions)) {
         console.error("Invalid response structure:", response);
         throw new Error("Invalid response structure from OpenAI");
       }
 
-      // Sprawdź czy mamy dokładnie oczekiwaną liczbę atrakcji
       if (response.attractions.length !== limit) {
-        console.error(`Expected ${limit} attractions, got ${response.attractions.length}`);
-        throw new Error(`OpenAI returned incorrect number of attractions`);
+        console.error("Expected " + limit + " attractions, got " + response.attractions.length);
+        throw new Error("OpenAI returned incorrect number of attractions");
       }
 
       for (const attraction of response.attractions) {
@@ -135,68 +244,13 @@ export class AttractionsService {
           console.error("Invalid attraction data:", attraction);
           throw new Error("Invalid attraction data in OpenAI response");
         }
-
-        // Sprawdź czy estimatedPrice nie jest ucięte
-        if (
-          attraction.estimatedPrice.endsWith("...") ||
-          (attraction.estimatedPrice.toLowerCase().startsWith("bezpłat") &&
-            !attraction.estimatedPrice.toLowerCase().includes("bezpłatne") &&
-            !attraction.estimatedPrice.toLowerCase().includes("bezpłatny"))
-        ) {
-          console.error("Truncated estimatedPrice:", attraction.estimatedPrice);
-          throw new Error("Truncated price information in OpenAI response");
-        }
       }
+
+      return response;
     } catch (error) {
-      console.error("Failed to parse or validate OpenAI response:", content);
-      if (error instanceof Error) {
-        throw new Error(`OpenAI response processing failed: ${error.message}`);
-      }
-      throw new Error("Failed to process OpenAI response");
+      console.error("Failed to parse OpenAI response:", content);
+      throw error;
     }
-
-    // Pobierz zdjęcia dla wszystkich atrakcji równolegle
-    const attractionsWithImages = await Promise.all(
-      response.attractions.map(async ({ name, description, latitude, longitude, estimatedPrice }) => {
-        // Najpierw sprawdź czy mamy już zapisane zdjęcie dla tej atrakcji
-        const { data: existingAttraction } = await this.supabase
-          .from("attractions")
-          .select("image, image_photographer, image_photographer_url, image_source")
-          .eq("name", name)
-          .single();
-
-        if (existingAttraction?.image) {
-          return {
-            name,
-            description,
-            latitude,
-            longitude,
-            image: {
-              url: existingAttraction.image,
-              photographer: existingAttraction.image_photographer || "",
-              photographerUrl: existingAttraction.image_photographer_url || "",
-              source: existingAttraction.image_source || "",
-            },
-            estimatedPrice: estimatedPrice || "Cena nieznana",
-          };
-        }
-
-        // Jeśli nie mamy zapisanego zdjęcia, pobierz nowe z Pexels
-        const englishName = name.match(/\((.*?)\)/)?.[1] || name;
-        const pexelsImage = await searchAttractionImage(englishName);
-
-        return {
-          name,
-          description,
-          latitude,
-          longitude,
-          image: pexelsImage,
-          estimatedPrice: estimatedPrice || "Cena nieznana",
-        };
-      })
-    );
-
-    return attractionsWithImages;
   }
 
   async addAttractions(noteId: UUID, userId: UUID, attractions: AttractionCreateInput[]): Promise<AttractionDTO[]> {
