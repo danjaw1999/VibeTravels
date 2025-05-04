@@ -175,11 +175,11 @@ const { attractions: createdAttractions } = await response.json();
 
 ```bash
 # Supabase
-SUPABASE_URL=your_supabase_url
+PUBLIC_SUPABASE_URL=your_supabase_url
 PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # OpenAI
-OPENAI_API_KEY=your_openai_api_key
+PUBLIC_OPENAI_API_KEY=your_openai_api_key
 OPENAI_ORGANIZATION_ID=your_openai_org_id  # Optional
 ```
 

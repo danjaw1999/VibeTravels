@@ -28,6 +28,35 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
+    // Check if required environment variables are present
+    if (!import.meta.env.PUBLIC_OPENAI_API_KEY) {
+      console.error("OpenAI API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: OpenAI API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!import.meta.env.PUBLIC_PEXELS_API_KEY) {
+      console.error("Pexels API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: Pexels API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Check cache first
     const cacheKey = `${id}-${locals.user.id}`;
     const cachedEntry = suggestionsCache.get(cacheKey);

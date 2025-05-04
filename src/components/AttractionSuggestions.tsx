@@ -16,8 +16,18 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
   const [error, setError] = useState<string | null>(null);
   const [suggestions, setSuggestions] = useState<AttractionSuggestionDTO[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [retryCount, setRetryCount] = useState(0);
+  const [hasExhaustedRetries, setHasExhaustedRetries] = useState(false);
+  const MAX_RETRIES = 3;
+  const RETRY_DELAY = 2000; // 2 seconds
 
   const generateSuggestions = useCallback(async () => {
+    // If we've already exhausted retries, don't try again
+    if (hasExhaustedRetries) {
+      setError("Maximum retry attempts reached. Please refresh the page to try again.");
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
@@ -25,18 +35,97 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
       const response = await fetch(`/api/travel-notes/${travelNote.id}/attractions/generate`);
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to generate suggestions");
+        // Handle 500 errors specifically
+        if (response.status === 500) {
+          const text = await response.text();
+          console.error("Server error response:", text);
+
+          // If we haven't exceeded max retries and the response is empty, retry
+          if ((!text || text.trim() === "") && retryCount < MAX_RETRIES) {
+            setRetryCount((prev) => {
+              const newCount = prev + 1;
+              if (newCount >= MAX_RETRIES) {
+                setHasExhaustedRetries(true);
+              }
+              return newCount;
+            });
+
+            console.log(`Retrying request (${retryCount + 1}/${MAX_RETRIES})...`);
+
+            // Wait before retrying
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+            throw new Error("RETRY"); // Special error to trigger retry
+          }
+
+          setHasExhaustedRetries(true);
+          throw new Error(
+            "Server error: Failed to generate suggestions. Please try again later. " +
+              "If the problem persists, try refreshing the page."
+          );
+        }
+
+        // Handle other errors
+        const text = await response.text();
+        let errorMessage = "Failed to generate suggestions";
+
+        try {
+          const data = JSON.parse(text);
+          errorMessage = data.error || errorMessage;
+        } catch {
+          console.error("Non-JSON error response:", text);
+        }
+
+        throw new Error(errorMessage);
       }
 
-      const data = await response.json();
+      // Reset retry count on successful response
+      setRetryCount(0);
+      setHasExhaustedRetries(false);
+
+      let data: { suggestions: AttractionSuggestionDTO[] };
+      try {
+        data = await response.json();
+      } catch (e) {
+        console.error("Failed to parse JSON response");
+        throw new Error("Invalid response format from server");
+      }
+
+      if (!data.suggestions || !Array.isArray(data.suggestions)) {
+        console.error("Invalid response structure:", data);
+        throw new Error("Invalid response format: missing suggestions");
+      }
+
       setSuggestions(data.suggestions);
     } catch (err) {
+      // If this is a retry error and we haven't exhausted retries, try again
+      if (err instanceof Error && err.message === "RETRY" && !hasExhaustedRetries) {
+        generateSuggestions();
+        return;
+      }
+
       setError(err instanceof Error ? err.message : "Failed to generate suggestions");
       console.error("Error generating suggestions:", err);
     } finally {
       setIsLoading(false);
     }
+  }, [travelNote.id, retryCount, hasExhaustedRetries]);
+
+  useEffect(() => {
+    // Only generate suggestions if:
+    // 1. There are no existing attractions
+    // 2. No suggestions yet
+    // 3. Not currently loading
+    // 4. Haven't exhausted retries
+    if (travelNote.attractions.length === 0 && suggestions.length === 0 && !isLoading && !hasExhaustedRetries) {
+      generateSuggestions();
+    }
+  }, [travelNote.attractions.length, suggestions.length, isLoading, generateSuggestions, hasExhaustedRetries]);
+
+  // Reset states when travel note changes
+  useEffect(() => {
+    setRetryCount(0);
+    setHasExhaustedRetries(false);
+    setError(null);
   }, [travelNote.id]);
 
   const handleCheckboxChange = (suggestionId: string) => {
@@ -81,8 +170,18 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
         });
 
         if (!response.ok) {
-          const data = await response.json();
-          throw new Error(data.message || "Failed to add attractions");
+          const text = await response.text();
+          let errorMessage = "Failed to add attractions";
+          try {
+            const data = JSON.parse(text);
+            errorMessage = data.message || data.error || errorMessage;
+          } catch {
+            if (response.status === 500) {
+              errorMessage = "Server error: Failed to add attractions. Please try again later.";
+            }
+            console.error("Error response:", text);
+          }
+          throw new Error(errorMessage);
         }
 
         window.location.reload();
@@ -94,12 +193,6 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (travelNote.attractions.length === 0 && suggestions.length === 0 && !isLoading) {
-      generateSuggestions();
-    }
-  }, [travelNote.attractions.length, suggestions.length, isLoading, generateSuggestions]);
 
   if (travelNote.attractions.length > 0) {
     return null;

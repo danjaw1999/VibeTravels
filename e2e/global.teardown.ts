@@ -2,8 +2,8 @@ import { test as teardown } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "../src/db/database.types";
 teardown("clean up Supabase database", async () => {
-  const supabaseUrl = process.env.SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.PUBLIC_SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
     console.error("Missing Supabase credentials in environment variables.");
@@ -13,7 +13,7 @@ teardown("clean up Supabase database", async () => {
   const supabase = createClient<Database>(supabaseUrl, supabaseServiceKey);
 
   try {
-    const e2eUserId = process.env.E2E_USERNAME_ID;
+    const e2eUserId = process.env.PUBLIC_E2E_USERNAME_ID;
 
     if (!e2eUserId) {
       console.error("Missing E2E user ID in environment variables.");
