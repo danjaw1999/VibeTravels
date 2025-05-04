@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { LogIn, Menu, X, Home, MapIcon, PlusCircle, User as UserIcon, LogOut, Sun, Moon } from "lucide-react";
+import { LogIn, Menu, X, Home, MapIcon, PlusCircle, User as UserIcon, LogOut } from "lucide-react";
 import { Link } from "@/components/ui/link";
 import { useAuthStore } from "@/store/authStore";
 import type { User } from "@supabase/supabase-js";
 import { isFeatureEnabled } from "@/lib/featureFlags";
-import { useTheme } from "@/hooks/useTheme";
 
 interface NavBarProps {
   initialUser?: User | null;
@@ -17,19 +16,8 @@ export default function NavBar({ initialUser }: NavBarProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const isAuthEnabled = isFeatureEnabled("auth");
-  const isProfileEnabled = isFeatureEnabled("profile");
-  const { theme, toggleTheme, isMounted } = useTheme();
 
-  useEffect(() => {
-    if (initialUser) {
-      setUser({
-        id: initialUser.id,
-        email: initialUser.email || null,
-      });
-    }
-    setInitialLoadComplete(true);
-  }, [initialUser, setUser]);
-
+  // Dodaj blokadę scrollowania gdy menu jest otwarte
   useEffect(() => {
     if (isMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -41,6 +29,16 @@ export default function NavBar({ initialUser }: NavBarProps) {
       document.body.style.overflow = "";
     };
   }, [isMenuOpen]);
+
+  useEffect(() => {
+    if (initialUser) {
+      setUser({
+        id: initialUser.id,
+        email: initialUser.email || null,
+      });
+    }
+    setInitialLoadComplete(true);
+  }, [initialUser, setUser]);
 
   const userIsAuthenticated = initialUser != null || (initialLoadComplete && isAuthenticated);
 
@@ -76,34 +74,19 @@ export default function NavBar({ initialUser }: NavBarProps) {
         </div>
 
         {/* Mobile menu button */}
-        <div className="flex items-center gap-2 md:hidden">
-          <button
-            className={`p-2 rounded-md hover:bg-accent transition-opacity duration-200 ${
-              isMounted ? "opacity-100" : "opacity-0"
-            }`}
-            onClick={toggleTheme}
-            aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            type="button"
-            aria-hidden={!isMounted}
-            tabIndex={isMounted ? 0 : -1}
-            data-testid="mobile-theme-toggle"
-          >
-            {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <button
-            className="p-2 rounded-md relative z-50"
-            onClick={toggleMenu}
-            aria-label={isMenuOpen ? "Close menu" : "Open menu"}
-            type="button"
-            data-testid={isMenuOpen ? "close-menu-button" : "open-menu-button"}
-          >
-            {isMenuOpen ? (
-              <X size={24} className="transition-transform duration-300 ease-in-out" />
-            ) : (
-              <Menu size={24} className="transition-transform duration-300 ease-in-out" />
-            )}
-          </button>
-        </div>
+        <button
+          className="md:hidden p-2 rounded-md relative z-50"
+          onClick={toggleMenu}
+          aria-label={isMenuOpen ? "Close menu" : "Open menu"}
+          type="button"
+          data-testid={isMenuOpen ? "close-menu-button" : "open-menu-button"}
+        >
+          {isMenuOpen ? (
+            <X size={24} className="transition-transform duration-300 ease-in-out" />
+          ) : (
+            <Menu size={24} className="transition-transform duration-300 ease-in-out" />
+          )}
+        </button>
 
         {/* Desktop menu */}
         <nav className="hidden md:flex items-center space-x-4" data-testid="desktop-menu">
@@ -117,7 +100,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
             data-testid="places-link"
           >
             <MapIcon className="mr-2 h-4 w-4" />
-            <span>Places</span>
+            <span>Miejsca</span>
           </Link>
           {userIsAuthenticated && (
             <Link
@@ -126,7 +109,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
               data-testid="add-place-link"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
-              <span>Add Place</span>
+              <span>Dodaj miejsce</span>
             </Link>
           )}
 
@@ -134,16 +117,14 @@ export default function NavBar({ initialUser }: NavBarProps) {
             <div className="w-24 h-9 animate-pulse bg-muted rounded-md" data-testid="loading-indicator" />
           ) : userIsAuthenticated && isAuthEnabled ? (
             <div className="flex items-center space-x-2" data-testid="logged-in-menu">
-              {isProfileEnabled && (
-                <Link
-                  href="/profile"
-                  className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
-                  data-testid="profile-link"
-                >
-                  <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
-                </Link>
-              )}
+              <Link
+                href="/profile"
+                className="flex items-center px-3 py-2 rounded-md hover:bg-accent"
+                data-testid="profile-link"
+              >
+                <UserIcon className="mr-2 h-4 w-4" />
+                <span>Profil</span>
+              </Link>
               <Button
                 variant="outline"
                 size="default"
@@ -153,21 +134,8 @@ export default function NavBar({ initialUser }: NavBarProps) {
                 className="flex items-center"
               >
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
+                <span>Wyloguj</span>
               </Button>
-              <button
-                className={`p-2 rounded-md hover:bg-accent transition-opacity duration-200 ${
-                  isMounted ? "opacity-100" : "opacity-0"
-                }`}
-                onClick={toggleTheme}
-                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                type="button"
-                aria-hidden={!isMounted}
-                tabIndex={isMounted ? 0 : -1}
-                data-testid="desktop-theme-toggle"
-              >
-                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
             </div>
           ) : isAuthEnabled ? (
             <div className="flex items-center space-x-2" data-testid="guest-menu">
@@ -177,28 +145,27 @@ export default function NavBar({ initialUser }: NavBarProps) {
                 data-testid="login-link"
               >
                 <LogIn className="mr-2 h-4 w-4" />
-                <span>Login</span>
+                <span>Zaloguj</span>
               </Link>
               <Button asChild data-testid="register-button">
-                <Link href="/register">Sign up</Link>
+                <Link href="/register">Zarejestruj się</Link>
               </Button>
-              <button
-                className={`p-2 rounded-md hover:bg-accent transition-opacity duration-200 ${
-                  isMounted ? "opacity-100" : "opacity-0"
-                }`}
-                onClick={toggleTheme}
-                aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-                type="button"
-                aria-hidden={!isMounted}
-                tabIndex={isMounted ? 0 : -1}
-                data-testid="desktop-theme-toggle"
-              >
-                {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
             </div>
           ) : null}
         </nav>
       </div>
+
+      {/* Mobile menu backdrop - używamy fixed i animacji z prawej strony */}
+      <div
+        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300 ${
+          isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={closeMenu}
+        onKeyDown={handleBackdropKeyDown}
+        role="button"
+        tabIndex={0}
+        aria-label="Close menu"
+      />
 
       {/* Mobile menu content */}
       <div
@@ -208,16 +175,8 @@ export default function NavBar({ initialUser }: NavBarProps) {
         data-testid="mobile-menu"
       >
         <div className="p-4 h-full flex flex-col">
-          <div className="mb-4 pb-2 border-b flex items-center justify-between">
+          <div className="mb-4 pb-2 border-b">
             <h2 className="text-lg font-semibold">Menu</h2>
-            <button
-              onClick={closeMenu}
-              className="p-2 rounded-md hover:bg-accent"
-              aria-label="Close menu"
-              type="button"
-            >
-              <X size={20} />
-            </button>
           </div>
 
           <nav className="flex flex-col space-y-3 flex-grow">
@@ -237,7 +196,7 @@ export default function NavBar({ initialUser }: NavBarProps) {
               data-testid="mobile-places-link"
             >
               <MapIcon className="mr-2 h-4 w-4" />
-              <span>Places</span>
+              <span>Miejsca</span>
             </Link>
             {userIsAuthenticated && (
               <Link
@@ -247,14 +206,16 @@ export default function NavBar({ initialUser }: NavBarProps) {
                 data-testid="mobile-add-place-link"
               >
                 <PlusCircle className="mr-2 h-4 w-4" />
-                <span>Add Place</span>
+                <span>Dodaj miejsce</span>
               </Link>
             )}
           </nav>
 
-          {userIsAuthenticated && isAuthEnabled ? (
-            <div className="mt-auto pt-4 border-t space-y-3">
-              {isProfileEnabled && (
+          <div className="mt-auto pb-6">
+            {isLoading ? (
+              <div className="w-full h-9 animate-pulse bg-muted rounded-md" data-testid="mobile-loading-indicator" />
+            ) : userIsAuthenticated && isAuthEnabled ? (
+              <div className="flex flex-col space-y-3">
                 <Link
                   href="/profile"
                   className="flex items-center p-2 rounded-md hover:bg-accent transition-colors"
@@ -262,59 +223,41 @@ export default function NavBar({ initialUser }: NavBarProps) {
                   data-testid="mobile-profile-link"
                 >
                   <UserIcon className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                  <span>Profil</span>
                 </Link>
-              )}
-              <Button
-                variant="outline"
-                size="default"
-                onClick={(e) => {
-                  closeMenu();
-                  handleLogout();
-                }}
-                disabled={isLoading}
-                data-testid="mobile-logout-button"
-                className="w-full justify-center"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </Button>
-            </div>
-          ) : isAuthEnabled ? (
-            <div className="mt-auto pt-4 border-t space-y-3">
-              <Link
-                href="/login"
-                className="flex items-center p-2 rounded-md hover:bg-accent transition-colors"
-                onClick={closeMenu}
-                data-testid="mobile-login-link"
-              >
-                <LogIn className="mr-2 h-4 w-4" />
-                <span>Login</span>
-              </Link>
-              <Button
-                asChild
-                className="w-full justify-center"
-                data-testid="mobile-register-button"
-                onClick={closeMenu}
-              >
-                <Link href="/register">Sign up</Link>
-              </Button>
-            </div>
-          ) : null}
+                <Button
+                  variant="outline"
+                  size="default"
+                  onClick={handleLogout}
+                  disabled={isLoading}
+                  data-testid="mobile-logout-button"
+                  className="w-auto mx-auto flex items-center justify-center"
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Wyloguj</span>
+                </Button>
+              </div>
+            ) : isAuthEnabled ? (
+              <div className="space-y-3">
+                <Link
+                  href="/login"
+                  className="flex items-center p-2 rounded-md hover:bg-accent transition-colors"
+                  onClick={closeMenu}
+                  data-testid="mobile-login-link"
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  <span>Zaloguj</span>
+                </Link>
+                <Button asChild className="w-full" data-testid="mobile-register-button">
+                  <Link href="/register" onClick={closeMenu}>
+                    Zarejestruj się
+                  </Link>
+                </Button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
-
-      {/* Mobile menu backdrop */}
-      <div
-        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300 ${
-          isMenuOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-        onClick={closeMenu}
-        onKeyDown={handleBackdropKeyDown}
-        role="button"
-        tabIndex={0}
-        aria-label="Close menu"
-      />
     </header>
   );
 }

@@ -36,10 +36,10 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
     <Card className="w-full max-w-md" data-testid="login-form">
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center" data-testid="login-title">
-          Welcome back
+          Witaj ponownie
         </CardTitle>
         <CardDescription className="text-center" data-testid="login-description">
-          Log in to your account
+          Zaloguj się do swojego konta
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -73,7 +73,7 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
 
           <AuthInput
             id="password"
-            label="Password"
+            label="Hasło"
             type="password"
             error={errors.password?.message}
             autoComplete="current-password"
@@ -90,7 +90,7 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
                 className="text-sm font-medium text-primary hover:text-primary/90 transition-colors"
                 data-testid="reset-password-link"
               >
-                Forgot your password?
+                Nie pamiętasz hasła?
               </a>
             </div>
           )}
@@ -101,19 +101,19 @@ export default function LoginForm({ redirectTo }: LoginFormProps) {
             className="w-full px-4 py-2 text-sm font-medium text-white bg-black hover:bg-black/90 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             data-testid="login-submit-button"
           >
-            {isLoading ? "Logging in..." : "Log in"}
+            {isLoading ? "Logowanie..." : "Zaloguj się"}
           </button>
         </form>
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
-          Don't have an account yet?{" "}
+          Nie masz jeszcze konta?{" "}
           <a
             href="/register"
             className="font-medium text-primary hover:text-primary/90 transition-colors"
             data-testid="register-link"
           >
-            Sign up
+            Zarejestruj się
           </a>
         </p>
       </CardFooter>

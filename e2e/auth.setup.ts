@@ -36,7 +36,8 @@ setup("authenticate", async ({ page }) => {
   await submitButton.waitFor({ state: "visible" });
   await submitButton.click();
 
-  await expect(page.getByTestId("logged-in-menu")).toBeVisible({
+  // Wait for successful navigation and verify we're logged in
+  await expect(page.getByTestId("logout-button")).toBeVisible({
     timeout: 10000,
   });
 

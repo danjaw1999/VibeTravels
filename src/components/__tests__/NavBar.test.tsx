@@ -29,15 +29,7 @@ vi.mock("@/db/supabase", () => ({
 }));
 
 vi.mock("@/lib/featureFlags", () => ({
-  isFeatureEnabled: vi.fn((feature: string) => feature === "auth" || feature === "profile"),
-}));
-
-vi.mock("@/hooks/useTheme", () => ({
-  useTheme: vi.fn(() => ({
-    theme: "dark",
-    toggleTheme: vi.fn(),
-    isMounted: true,
-  })),
+  isFeatureEnabled: vi.fn((feature: string) => feature === "auth"),
 }));
 
 // Importy testowanych komponentów i modułów - po mockach
@@ -45,13 +37,11 @@ import NavBar from "../NavBar";
 import { supabase } from "@/db/supabase";
 import { useAuthStore } from "@/store/authStore";
 import { isFeatureEnabled } from "@/lib/featureFlags";
-import { useTheme } from "@/hooks/useTheme";
 import type { User } from "@supabase/supabase-js";
 
 describe("NavBar", () => {
   const mockSetUser = vi.fn();
   const mockLogout = vi.fn();
-  const mockToggleTheme = vi.fn();
 
   beforeEach(() => {
     vi.resetAllMocks();
@@ -75,14 +65,7 @@ describe("NavBar", () => {
     window.dispatchEvent(new Event("resize"));
 
     // Enable auth feature by default
-    vi.mocked(isFeatureEnabled).mockImplementation((feature: string) => feature === "auth" || feature === "profile");
-
-    // Default theme implementation
-    vi.mocked(useTheme).mockReturnValue({
-      theme: "dark",
-      toggleTheme: mockToggleTheme,
-      isMounted: true,
-    });
+    vi.mocked(isFeatureEnabled).mockImplementation((feature: string) => feature === "auth");
   });
 
   it("renders the navbar with logo and links", async () => {
@@ -97,43 +80,6 @@ describe("NavBar", () => {
       expect(screen.getByTestId("home-link")).toBeInTheDocument();
       expect(screen.getByTestId("places-link")).toBeInTheDocument();
     });
-  });
-
-  it("shows theme toggle button with correct initial state", async () => {
-    render(<NavBar />);
-
-    // Check desktop theme toggle
-    const desktopThemeButton = screen.getByTestId("desktop-theme-toggle");
-    expect(desktopThemeButton).toBeInTheDocument();
-    expect(desktopThemeButton).toHaveClass("opacity-100"); // Button is visible when mounted
-
-    await userEvent.click(desktopThemeButton);
-    expect(mockToggleTheme).toHaveBeenCalled();
-
-    // Check mobile theme toggle
-    const mobileThemeButton = screen.getByTestId("mobile-theme-toggle");
-    expect(mobileThemeButton).toBeInTheDocument();
-    expect(mobileThemeButton).toHaveClass("opacity-100");
-  });
-
-  it("hides theme toggle buttons when not mounted", async () => {
-    vi.mocked(useTheme).mockReturnValue({
-      theme: "dark",
-      toggleTheme: mockToggleTheme,
-      isMounted: false,
-    });
-
-    render(<NavBar />);
-
-    const desktopThemeButton = screen.getByTestId("desktop-theme-toggle");
-    expect(desktopThemeButton).toHaveClass("opacity-0");
-    expect(desktopThemeButton).toHaveAttribute("aria-hidden", "true");
-    expect(desktopThemeButton).toHaveAttribute("tabIndex", "-1");
-
-    const mobileThemeButton = screen.getByTestId("mobile-theme-toggle");
-    expect(mobileThemeButton).toHaveClass("opacity-0");
-    expect(mobileThemeButton).toHaveAttribute("aria-hidden", "true");
-    expect(mobileThemeButton).toHaveAttribute("tabIndex", "-1");
   });
 
   it("shows login and register buttons when user is not logged in and auth is enabled", async () => {
@@ -157,13 +103,11 @@ describe("NavBar", () => {
       expect(screen.queryByTestId("login-link")).not.toBeInTheDocument();
       expect(screen.queryByTestId("register-button")).not.toBeInTheDocument();
       expect(screen.queryByTestId("logged-in-menu")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("profile-link")).not.toBeInTheDocument();
     });
   });
 
   it("shows profile and logout when user is logged in through initialUser", async () => {
-    vi.mocked(isFeatureEnabled).mockImplementation((feature: string) => feature === "auth" || feature === "profile");
-
+    // Symulacja obiektu użytkownika
     const mockUser = {
       id: "123",
       email: "test@example.com",
@@ -187,8 +131,7 @@ describe("NavBar", () => {
   });
 
   it("shows profile and logout when user is logged in through authStore", async () => {
-    vi.mocked(isFeatureEnabled).mockImplementation((feature: string) => feature === "auth" || feature === "profile");
-
+    // Mock store with authenticated user
     vi.mocked(useAuthStore).mockReturnValue({
       user: { id: "123", email: "test@example.com" },
       isAuthenticated: true,
@@ -210,49 +153,33 @@ describe("NavBar", () => {
   it("toggles mobile menu on small screens", async () => {
     const user = userEvent.setup();
 
+    // Mock mobile viewport
     window.innerWidth = 480;
     window.dispatchEvent(new Event("resize"));
 
     render(<NavBar />);
 
+    // Initially menu is closed (translated off-screen)
     const mobileMenu = screen.getByTestId("mobile-menu");
     expect(mobileMenu).toHaveClass("translate-x-full");
     expect(mobileMenu).not.toHaveClass("translate-x-0");
 
+    // Open menu
     const menuButton = screen.getByTestId("open-menu-button");
     await user.click(menuButton);
 
+    // Menu is now open
     await waitFor(() => {
       expect(screen.getByTestId("mobile-menu")).toHaveClass("translate-x-0");
       expect(screen.getByTestId("mobile-menu")).not.toHaveClass("translate-x-full");
       expect(screen.getByTestId("mobile-home-link")).toBeInTheDocument();
     });
 
+    // Close menu
     const closeButton = screen.getByTestId("close-menu-button");
     await user.click(closeButton);
 
-    await waitFor(() => {
-      expect(screen.getByTestId("mobile-menu")).toHaveClass("translate-x-full");
-      expect(screen.getByTestId("mobile-menu")).not.toHaveClass("translate-x-0");
-    });
-  });
-
-  it("closes mobile menu when clicking menu items", async () => {
-    const user = userEvent.setup();
-    window.innerWidth = 480;
-    window.dispatchEvent(new Event("resize"));
-
-    render(<NavBar />);
-
-    // Open menu
-    const menuButton = screen.getByTestId("open-menu-button");
-    await user.click(menuButton);
-
-    // Click a menu item
-    const homeLink = screen.getByTestId("mobile-home-link");
-    await user.click(homeLink);
-
-    // Check if menu is closed
+    // Menu is closed again
     await waitFor(() => {
       expect(screen.getByTestId("mobile-menu")).toHaveClass("translate-x-full");
       expect(screen.getByTestId("mobile-menu")).not.toHaveClass("translate-x-0");
@@ -260,6 +187,7 @@ describe("NavBar", () => {
   });
 
   it("updates UI when auth state changes", async () => {
+    // Najpierw sprawdzamy, czy UI wyświetla poprawnie stan niezalogowany
     const { unmount } = render(<NavBar />);
 
     await waitFor(() => {
@@ -267,8 +195,10 @@ describe("NavBar", () => {
       expect(screen.queryByTestId("logged-in-menu")).not.toBeInTheDocument();
     });
 
+    // Odmontowujemy komponent
     unmount();
 
+    // Aktualizujemy mock dla nowego stanu
     vi.mocked(useAuthStore).mockReturnValue({
       user: { id: "123", email: "test@example.com" },
       isAuthenticated: true,
@@ -276,29 +206,13 @@ describe("NavBar", () => {
       logout: mockLogout,
     });
 
+    // Renderujemy ponownie z nowym stanem
     render(<NavBar />);
 
+    // Sprawdzamy, czy UI odzwierciedla nowy stan - zalogowany
     await waitFor(() => {
       expect(screen.queryByTestId("guest-menu")).not.toBeInTheDocument();
       expect(screen.getByTestId("logged-in-menu")).toBeInTheDocument();
-    });
-  });
-
-  it("does not show profile link when profile feature is disabled", async () => {
-    vi.mocked(isFeatureEnabled).mockImplementation((feature: string) => feature === "auth");
-
-    const mockUser = {
-      id: "123",
-      email: "test@example.com",
-    } as User;
-
-    render(<NavBar initialUser={mockUser} />);
-
-    await waitFor(() => {
-      expect(screen.queryByTestId("profile-link")).not.toBeInTheDocument();
-      expect(screen.queryByTestId("mobile-profile-link")).not.toBeInTheDocument();
-      expect(screen.getByTestId("logged-in-menu")).toBeInTheDocument();
-      expect(screen.getByTestId("logout-button")).toBeInTheDocument();
     });
   });
 });

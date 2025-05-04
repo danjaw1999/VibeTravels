@@ -1,11 +1,10 @@
-export type FeatureName = "auth" | "create-travel-note" | "restore-password" | "profile";
+export type FeatureName = "auth" | "create-travel-note" | "restore-password";
 export type EnvironmentName = "local" | "integration" | "prod";
 
 export interface FeatureFlags {
   auth: boolean;
   "create-travel-note": boolean;
   "restore-password": boolean;
-  profile: boolean;
 }
 
 const ENV_FEATURE_FLAGS: Record<EnvironmentName, FeatureFlags> = {
@@ -13,19 +12,16 @@ const ENV_FEATURE_FLAGS: Record<EnvironmentName, FeatureFlags> = {
     auth: true,
     "create-travel-note": true,
     "restore-password": false,
-    profile: false,
   },
   integration: {
     auth: true,
     "create-travel-note": true,
     "restore-password": false,
-    profile: false,
   },
   prod: {
     auth: true,
     "create-travel-note": true,
     "restore-password": false,
-    profile: false,
   },
 };
 

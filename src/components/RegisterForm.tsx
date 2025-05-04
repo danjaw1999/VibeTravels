@@ -19,14 +19,14 @@ interface PasswordRequirement {
 }
 
 const passwordRequirements: PasswordRequirement[] = [
-  { id: "length", regex: /.{8,}/, label: "At least 8 characters" },
-  { id: "uppercase", regex: /[A-Z]/, label: "One uppercase letter" },
-  { id: "lowercase", regex: /[a-z]/, label: "One lowercase letter" },
-  { id: "digit", regex: /[0-9]/, label: "One number" },
+  { id: "length", regex: /.{8,}/, label: "Co najmniej 8 znaków" },
+  { id: "uppercase", regex: /[A-Z]/, label: "Jedna wielka litera" },
+  { id: "lowercase", regex: /[a-z]/, label: "Jedna mała litera" },
+  { id: "digit", regex: /[0-9]/, label: "Jedna cyfra" },
   {
     id: "special",
     regex: /[!@#$%^&*(),.?":{}|<>]/,
-    label: "One special character",
+    label: "Jeden znak specjalny",
   },
 ];
 
@@ -77,8 +77,8 @@ export const RegisterForm = () => {
   return (
     <Card className="w-full max-w-md shadow-lg">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Sign up</CardTitle>
-        <CardDescription className="text-center">Create an account to start your journey</CardDescription>
+        <CardTitle className="text-2xl font-bold text-center">Rejestracja</CardTitle>
+        <CardDescription className="text-center">Utwórz konto, aby rozpocząć swoją podróż</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={onSubmit} className="space-y-6" noValidate>
@@ -95,7 +95,7 @@ export const RegisterForm = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="your@email.com"
+                placeholder="twoj@email.com"
                 disabled={isLoading}
                 aria-invalid={!!errors.email}
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -112,7 +112,7 @@ export const RegisterForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">Hasło</Label>
             <div className="relative">
               <Lock className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
@@ -153,12 +153,12 @@ export const RegisterForm = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="profileDescription">Profile description (optional)</Label>
+            <Label htmlFor="profileDescription">Opis profilu (opcjonalnie)</Label>
             <div className="relative">
               <User className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
               <Textarea
                 id="profileDescription"
-                placeholder="Tell us about yourself"
+                placeholder="Opowiedz coś o sobie"
                 disabled={isLoading}
                 aria-invalid={!!errors.profileDescription}
                 aria-describedby={errors.profileDescription ? "description-error" : undefined}
@@ -185,12 +185,12 @@ export const RegisterForm = () => {
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating account...
+                Tworzenie konta...
               </>
             ) : (
               <>
                 <UserPlus className="mr-2 h-4 w-4" />
-                Create account
+                Utwórz konto
               </>
             )}
           </Button>
@@ -198,13 +198,13 @@ export const RegisterForm = () => {
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="px-8 text-center text-sm text-muted-foreground">
-          By clicking "Create account", you agree to our{" "}
+          Klikając &quot;Utwórz konto&quot;, akceptujesz nasze{" "}
           <a href="/terms" className="underline underline-offset-4 hover:text-primary">
-            Terms of Service
+            Warunki korzystania
           </a>
-          <span className="mx-1">and</span>
+          <span className="mx-1">i</span>
           <a href="/privacy" className="underline underline-offset-4 hover:text-primary">
-            Privacy Policy
+            Politykę prywatności
           </a>
           .
         </p>

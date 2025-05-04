@@ -99,6 +99,5 @@ vi.mock("@/lib/featureFlags", () => ({
     auth: true,
     "create-travel-note": true,
     "restore-password": false,
-    profile: false,
   }),
 }));

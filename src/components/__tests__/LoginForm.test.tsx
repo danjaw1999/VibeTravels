@@ -28,11 +28,11 @@ describe("LoginForm", () => {
     render(<LoginForm redirectTo="/dashboard" />);
 
     expect(screen.getByTestId("login-form")).toBeInTheDocument();
-    expect(screen.getByTestId("login-title")).toHaveTextContent("Welcome back");
-    expect(screen.getByTestId("login-description")).toHaveTextContent("Log in to your account");
+    expect(screen.getByTestId("login-title")).toHaveTextContent("Witaj ponownie");
+    expect(screen.getByTestId("login-description")).toHaveTextContent("Zaloguj się do swojego konta");
     expect(screen.getByTestId("email-input")).toBeInTheDocument();
     expect(screen.getByTestId("password-input")).toBeInTheDocument();
-    expect(screen.getByTestId("login-submit-button")).toHaveTextContent("Log in");
+    expect(screen.getByTestId("login-submit-button")).toHaveTextContent("Zaloguj się");
     expect(screen.getByTestId("reset-password-link")).toHaveAttribute("href", "/auth/reset-password");
     expect(screen.getByTestId("register-link")).toHaveAttribute("href", "/register");
   });
@@ -48,7 +48,7 @@ describe("LoginForm", () => {
 
     const submitButton = screen.getByTestId("login-submit-button");
     expect(submitButton).toBeDisabled();
-    expect(submitButton).toHaveTextContent("Logging in...");
+    expect(submitButton).toHaveTextContent("Logowanie...");
   });
 
   it("shows an error message when the API returns an error", () => {
