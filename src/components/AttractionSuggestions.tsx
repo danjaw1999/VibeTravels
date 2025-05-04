@@ -23,14 +23,39 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
       setError(null);
 
       const response = await fetch(`/api/travel-notes/${travelNote.id}/attractions/generate`);
+      const contentType = response.headers.get("content-type");
 
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to generate suggestions");
+        if (contentType?.includes("application/json")) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to generate suggestions");
+        } else {
+          const text = await response.text();
+          console.error("Non-JSON error response:", text);
+          throw new Error("Server returned an invalid response");
+        }
       }
 
-      const data = await response.json();
-      setSuggestions(data.suggestions);
+      if (!contentType?.includes("application/json")) {
+        console.error("Invalid content type:", contentType);
+        throw new Error("Server returned an invalid response type");
+      }
+
+      const text = await response.text();
+      if (!text) {
+        throw new Error("Empty response from server");
+      }
+
+      try {
+        const data = JSON.parse(text);
+        if (!data.suggestions || !Array.isArray(data.suggestions)) {
+          throw new Error("Invalid response format");
+        }
+        setSuggestions(data.suggestions);
+      } catch (parseError) {
+        console.error("JSON parse error:", parseError, "Response text:", text);
+        throw new Error("Failed to parse server response");
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate suggestions");
       console.error("Error generating suggestions:", err);

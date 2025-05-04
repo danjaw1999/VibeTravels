@@ -101,13 +101,17 @@ export class AttractionsService {
 
     let response: OpenAIAttractionResponse;
     try {
-      // Upewnij się, że mamy pełną odpowiedź JSON
-      if (!content.trim().endsWith("}")) {
-        console.error("Incomplete JSON response:", content);
-        throw new Error("Received incomplete JSON response from OpenAI");
+      // Clean up the response content
+      const cleanContent = content.trim().replace(/\n/g, " ");
+
+      // Try to find the complete JSON object
+      const jsonMatch = cleanContent.match(/\{.*\}/);
+      if (!jsonMatch) {
+        console.error("No valid JSON found in response:", cleanContent);
+        throw new Error("No valid JSON found in OpenAI response");
       }
 
-      response = JSON.parse(content) as OpenAIAttractionResponse;
+      response = JSON.parse(jsonMatch[0]) as OpenAIAttractionResponse;
 
       if (!response.attractions || !Array.isArray(response.attractions)) {
         console.error("Invalid response structure:", response);
