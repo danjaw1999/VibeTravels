@@ -1,7 +1,4 @@
-import { createClient, type PhotosWithTotalResults } from "pexels";
 import { PEXELS_API_KEY } from "astro:env/server";
-
-export const pexels = createClient(PEXELS_API_KEY);
 
 export interface PexelsImage {
   url: string;
@@ -10,12 +7,37 @@ export interface PexelsImage {
   source: string;
 }
 
+interface PexelsPhoto {
+  id: number;
+  photographer: string;
+  photographer_url: string;
+  src: {
+    original: string;
+    large2x: string;
+    large: string;
+    medium: string;
+    small: string;
+    portrait: string;
+    landscape: string;
+    tiny: string;
+  };
+}
+
+interface PexelsSearchResponse {
+  photos: PexelsPhoto[];
+  total_results: number;
+  page: number;
+  per_page: number;
+  prev_page?: string;
+  next_page?: string;
+}
+
 const MAX_REQUESTS_PER_HOUR = 200;
 const requestTimes: number[] = [];
 
 function canMakeRequest(): boolean {
   const now = Date.now();
-  // Usuń requesty starsze niż godzina
+  // Remove requests older than an hour
   const oneHourAgo = now - 3600000;
   while (requestTimes.length > 0 && requestTimes[0] < oneHourAgo) {
     requestTimes.shift();
@@ -32,14 +54,23 @@ export async function searchAttractionImage(query: string): Promise<PexelsImage 
 
     requestTimes.push(Date.now());
 
-    const searchResult = (await pexels.photos.search({
-      query,
-      per_page: 1,
-      orientation: "landscape",
-    })) as PhotosWithTotalResults;
+    const response = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`,
+      {
+        headers: {
+          Authorization: PEXELS_API_KEY,
+        },
+      }
+    );
 
-    if (searchResult.photos && searchResult.photos.length > 0) {
-      const photo = searchResult.photos[0];
+    if (!response.ok) {
+      throw new Error(`Pexels API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = (await response.json()) as PexelsSearchResponse;
+
+    if (data.photos && data.photos.length > 0) {
+      const photo = data.photos[0];
       return {
         url: photo.src.large2x,
         photographer: photo.photographer,
