@@ -22,8 +22,9 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
   const RETRY_DELAY = 2000; // 2 seconds
 
   const generateSuggestions = useCallback(async () => {
-    if (hasExhaustedRetries) {
-      setError("Maximum retry attempts reached. Please refresh the page to try again.");
+    if (hasExhaustedRetries || retryCount >= MAX_RETRIES) {
+      setError("Maximum retry attempts reached. Please try again later.");
+      setHasExhaustedRetries(true);
       return;
     }
 
@@ -34,36 +35,27 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
       const response = await fetch(`/api/travel-notes/${travelNote.id}/attractions/generate`);
 
       if (!response.ok) {
-        // Handle 500 errors specifically
         if (response.status === 500) {
           const text = await response.text();
           console.error("Server error response:", text);
 
-          // If we haven't exceeded max retries and the response is empty, retry
-          if ((!text || text.trim() === "") && retryCount < MAX_RETRIES) {
-            setRetryCount((prev) => {
-              const newCount = prev + 1;
-              if (newCount >= MAX_RETRIES) {
-                setHasExhaustedRetries(true);
-              }
-              return newCount;
-            });
+          const newRetryCount = retryCount + 1;
+          setRetryCount(newRetryCount);
 
-            console.log(`Retrying request (${retryCount + 1}/${MAX_RETRIES})...`);
-
-            // Wait before retrying
+          if ((!text || text.trim() === "") && newRetryCount < MAX_RETRIES) {
+            console.log(`Retrying request (${newRetryCount}/${MAX_RETRIES})...`);
             await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
-            throw new Error("RETRY"); // Special error to trigger retry
+            throw new Error("RETRY");
           }
 
-          setHasExhaustedRetries(true);
-          throw new Error(
-            "Server error: Failed to generate suggestions. Please try again later. " +
-              "If the problem persists, try refreshing the page."
-          );
+          if (newRetryCount >= MAX_RETRIES) {
+            setHasExhaustedRetries(true);
+            throw new Error(
+              "Server error: Failed to generate suggestions after maximum attempts. " + "Please try again later."
+            );
+          }
         }
 
-        // Handle other errors
         const text = await response.text();
         let errorMessage = "Failed to generate suggestions";
 
@@ -77,7 +69,7 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
         throw new Error(errorMessage);
       }
 
-      // Reset retry count on successful response
+      // Success - reset counters
       setRetryCount(0);
       setHasExhaustedRetries(false);
 
@@ -96,8 +88,8 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
 
       setSuggestions(data.suggestions);
     } catch (err) {
-      // If this is a retry error and we haven't exhausted retries, try again
-      if (err instanceof Error && err.message === "RETRY" && !hasExhaustedRetries) {
+      // Only retry if it's a RETRY error and we haven't exhausted retries
+      if (err instanceof Error && err.message === "RETRY" && !hasExhaustedRetries && retryCount < MAX_RETRIES) {
         generateSuggestions();
         return;
       }
@@ -110,15 +102,24 @@ export function AttractionSuggestions({ travelNote, onAttractionsAdd }: Attracti
   }, [travelNote.id, retryCount, hasExhaustedRetries]);
 
   useEffect(() => {
-    // Only generate suggestions if:
-    // 1. There are no existing attractions
-    // 2. No suggestions yet
-    // 3. Not currently loading
-    // 4. Haven't exhausted retries
-    if (travelNote.attractions.length === 0 && suggestions.length === 0 && !isLoading && !hasExhaustedRetries) {
+    // 5. Haven't exceeded max retries
+    if (
+      travelNote.attractions.length === 0 &&
+      suggestions.length === 0 &&
+      !isLoading &&
+      !hasExhaustedRetries &&
+      retryCount < MAX_RETRIES
+    ) {
       generateSuggestions();
     }
-  }, [travelNote.attractions.length, suggestions.length, isLoading, generateSuggestions, hasExhaustedRetries]);
+  }, [
+    travelNote.attractions.length,
+    suggestions.length,
+    isLoading,
+    generateSuggestions,
+    hasExhaustedRetries,
+    retryCount,
+  ]);
 
   // Reset states when travel note changes
   useEffect(() => {
