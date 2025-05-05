@@ -102,6 +102,7 @@ export const POST: APIRoute = async ({ request, locals, redirect }) => {
     }
 
     const body = await request.json();
+    console.log(body);
 
     const validatedData = createTravelNoteSchema.parse(body);
 

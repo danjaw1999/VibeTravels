@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import type { CreateTravelNoteCommand } from "@/types";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createTravelNoteSchema } from "@/lib/schemas/travel-note.schema";
 import { useTravelNotes } from "@/hooks/useTravelNotes";
@@ -14,6 +14,7 @@ export default function TravelNoteForm() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<CreateTravelNoteCommand>({
     resolver: zodResolver(createTravelNoteSchema),
@@ -68,7 +69,18 @@ export default function TravelNoteForm() {
       </div>
 
       <div className="flex items-center space-x-2">
-        <Checkbox id="is_public" data-testid="is-public-checkbox" {...register("is_public")} />
+        <Controller
+          name="is_public"
+          control={control}
+          render={({ field }) => (
+            <Checkbox
+              id="is_public"
+              data-testid="is-public-checkbox"
+              checked={field.value}
+              onCheckedChange={field.onChange}
+            />
+          )}
+        />
         <Label htmlFor="is_public">Make this note public</Label>
       </div>
 
