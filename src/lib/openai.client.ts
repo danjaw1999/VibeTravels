@@ -7,4 +7,5 @@ if (!OPENAI_API_KEY) {
 
 export const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
+  fetch: fetch,
 });
