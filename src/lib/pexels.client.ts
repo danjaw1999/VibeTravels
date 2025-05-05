@@ -1,6 +1,5 @@
 import { createClient, type PhotosWithTotalResults } from "pexels";
-
-const PEXELS_API_KEY = import.meta.env.PEXELS_API_KEY;
+import { PEXELS_API_KEY } from "astro:env/server";
 
 export const pexels = createClient(PEXELS_API_KEY);
 
