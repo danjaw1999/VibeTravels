@@ -23,6 +23,8 @@ export default defineConfig({
       PUBLIC_SUPABASE_URL: envField.string({ context: "server", access: "secret" }),
       PUBLIC_SUPABASE_KEY: envField.string({ context: "server", access: "secret" }),
       PUBLIC_SUPABASE_SERVICE_ROLE_KEY: envField.string({ context: "server", access: "secret" }),
+      OPENAI_API_KEY: envField.string({ context: "server", access: "secret" }),
+      PEXELS_API_KEY: envField.string({ context: "server", access: "secret" }),
     },
   },
   vite: {

@@ -115,8 +115,8 @@ jobs:
           echo "PUBLIC_E2E_USERNAME_ID=${{ secrets.PUBLIC_E2E_USERNAME_ID }}" >> .env.integration
           echo "PUBLIC_E2E_PASSWORD=${{ secrets.PUBLIC_E2E_PASSWORD }}" >> .env.integration
           echo "PUBLIC_SUPABASE_SERVICE_ROLE_KEY=${{ secrets.PUBLIC_SUPABASE_SERVICE_ROLE_KEY || secrets.PUBLIC_SUPABASE_KEY }}" >> .env.integration
-          echo "PUBLIC_OPENAI_API_KEY=${{ secrets.PUBLIC_OPENAI_API_KEY }}" >> .env.integration
-          echo "PUBLIC_PEXELS_API_KEY=${{ secrets.PUBLIC_PEXELS_API_KEY }}" >> .env.integration
+          echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.integration
+          echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> .env.integration
           echo "PUBLIC_ENV_NAME=${{ secrets.PUBLIC_ENV_NAME }}" >> .env.integration
 
       - name: Generate auth credentials

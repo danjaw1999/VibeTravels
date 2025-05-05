@@ -101,10 +101,8 @@ export class AttractionsService {
 
     let response: OpenAIAttractionResponse;
     try {
-      // Clean up the response content
       const cleanContent = content.trim().replace(/\n/g, " ");
 
-      // Try to find the complete JSON object
       const jsonMatch = cleanContent.match(/\{.*\}/);
       if (!jsonMatch) {
         console.error("No valid JSON found in response:", cleanContent);
@@ -118,7 +116,6 @@ export class AttractionsService {
         throw new Error("Invalid response structure from OpenAI");
       }
 
-      // Sprawdź czy mamy dokładnie oczekiwaną liczbę atrakcji
       if (response.attractions.length !== limit) {
         console.error(`Expected ${limit} attractions, got ${response.attractions.length}`);
         throw new Error(`OpenAI returned incorrect number of attractions`);
@@ -134,17 +131,6 @@ export class AttractionsService {
         ) {
           console.error("Invalid attraction data:", attraction);
           throw new Error("Invalid attraction data in OpenAI response");
-        }
-
-        // Sprawdź czy estimatedPrice nie jest ucięte
-        if (
-          attraction.estimatedPrice.endsWith("...") ||
-          (attraction.estimatedPrice.toLowerCase().startsWith("bezpłat") &&
-            !attraction.estimatedPrice.toLowerCase().includes("bezpłatne") &&
-            !attraction.estimatedPrice.toLowerCase().includes("bezpłatny"))
-        ) {
-          console.error("Truncated estimatedPrice:", attraction.estimatedPrice);
-          throw new Error("Truncated price information in OpenAI response");
         }
       }
     } catch (error) {

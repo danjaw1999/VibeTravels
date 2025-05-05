@@ -2,13 +2,15 @@ import type { APIRoute } from "astro";
 import { AttractionsService } from "@/lib/services/attractions.service";
 import { TravelNoteService } from "@/lib/services/travel-note.service";
 import type { AttractionSuggestionDTO } from "@/types";
+import { OPENAI_API_KEY, PEXELS_API_KEY } from "astro:env/server";
 
-// Simple in-memory cache with TTL
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
+
 interface CacheEntry {
   suggestions: AttractionSuggestionDTO[];
   timestamp: number;
 }
+
 const suggestionsCache = new Map<string, CacheEntry>();
 
 export const GET: APIRoute = async ({ params, locals }) => {
@@ -28,8 +30,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // Check if required environment variables are present
-    if (!import.meta.env.PUBLIC_OPENAI_API_KEY) {
+    if (!OPENAI_API_KEY) {
       console.error("OpenAI API key is missing");
       return new Response(
         JSON.stringify({
@@ -43,7 +44,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    if (!import.meta.env.PUBLIC_PEXELS_API_KEY) {
+    if (!PEXELS_API_KEY) {
       console.error("Pexels API key is missing");
       return new Response(
         JSON.stringify({
@@ -57,7 +58,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    // Check cache first
     const cacheKey = `${id}-${locals.user.id}`;
     const cachedEntry = suggestionsCache.get(cacheKey);
     const now = Date.now();
@@ -75,7 +75,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
-    // Pobierz travel note
     const travelNoteService = new TravelNoteService(locals.supabase);
     const travelNote = await travelNoteService.getTravelNoteById(id);
 
@@ -86,7 +85,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // Sprawdź czy użytkownik jest właścicielem
     if (travelNote.user_id !== locals.user.id) {
       return new Response(JSON.stringify({ error: "Access denied" }), {
         status: 403,
@@ -94,7 +92,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // Generuj sugestie
     const attractionsService = new AttractionsService(locals.supabase);
     const suggestions = await attractionsService.generateAttractionSuggestions(
       {
@@ -104,7 +101,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       8
     );
 
-    // Cache the results
     suggestionsCache.set(cacheKey, {
       suggestions,
       timestamp: now,
@@ -115,7 +111,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error generating suggestions:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Internal server error",
