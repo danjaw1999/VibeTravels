@@ -1,17 +1,12 @@
 import type { APIRoute } from "astro";
-import { AttractionsService } from "@/lib/services/attractions.service";
 import { TravelNoteService } from "@/lib/services/travel-note.service";
 import type { AttractionSuggestionDTO } from "@/types";
 import { OPENAI_API_KEY, PEXELS_API_KEY } from "astro:env/server";
+import { AttractionsService } from "@/lib/services/attractions.service";
 
+// Simple in-memory cache with TTL
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
-
-interface CacheEntry {
-  suggestions: AttractionSuggestionDTO[];
-  timestamp: number;
-}
-
-const suggestionsCache = new Map<string, CacheEntry>();
+const suggestionsCache = new Map<string, { suggestions: AttractionSuggestionDTO[]; timestamp: number }>();
 
 export const GET: APIRoute = async ({ params, locals }) => {
   try {
@@ -30,12 +25,12 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
+    // Check if required environment variables are present
     if (!OPENAI_API_KEY) {
       console.error("OpenAI API key is missing");
       return new Response(
         JSON.stringify({
-          error: "Server configuration error: OpenAI API key is missing",
-          debug: "Check environment variables configuration",
+          error: "Server configuration error (OpenAI API key missing)",
         }),
         {
           status: 500,
@@ -48,8 +43,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
       console.error("Pexels API key is missing");
       return new Response(
         JSON.stringify({
-          error: "Server configuration error: Pexels API key is missing",
-          debug: "Check environment variables configuration",
+          error: "Server configuration error (Pexels API key missing)",
         }),
         {
           status: 500,
@@ -58,21 +52,16 @@ export const GET: APIRoute = async ({ params, locals }) => {
       );
     }
 
+    // Check cache first
     const cacheKey = `${id}-${locals.user.id}`;
     const cachedEntry = suggestionsCache.get(cacheKey);
     const now = Date.now();
 
     if (cachedEntry && now - cachedEntry.timestamp < CACHE_TTL) {
-      return new Response(
-        JSON.stringify({
-          suggestions: cachedEntry.suggestions,
-          fromCache: true,
-        }),
-        {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      return new Response(JSON.stringify({ suggestions: cachedEntry.suggestions }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
     }
 
     const travelNoteService = new TravelNoteService(locals.supabase);

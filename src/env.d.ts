@@ -2,7 +2,6 @@
 
 import type { User } from "@supabase/supabase-js";
 import type { SupabaseClient } from "./db/supabase";
-import type { EnvironmentName } from "./lib/featureFlags";
 
 declare namespace App {
   interface Locals {
@@ -13,11 +12,12 @@ declare namespace App {
 
 interface ImportMetaEnv {
   readonly PUBLIC_SUPABASE_URL: string;
-  readonly PUBLIC_SUPABASE_KEY: string;
-  readonly PUBLIC_SUPABASE_SERVICE_ROLE_KEY: string;
-  readonly OPENROUTER_API_KEY: string;
-  readonly PUBLIC_ENV_NAME: EnvironmentName;
-  // more env variables...
+  readonly PUBLIC_SUPABASE_ANON_KEY: string;
+  readonly PUBLIC_SITE_URL: string;
+  readonly SUPABASE_SERVICE_ROLE_KEY: string;
+  readonly OPENAI_API_KEY: string;
+  readonly PEXELS_API_KEY: string;
+  readonly PUBLIC_ENV_NAME: string;
 }
 
 interface ImportMeta {
