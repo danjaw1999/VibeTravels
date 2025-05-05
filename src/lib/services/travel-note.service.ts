@@ -55,7 +55,6 @@ export class TravelNoteService {
 
   async createTravelNote(command: CreateTravelNoteCommand): Promise<TravelNoteDTO> {
     try {
-      // Check for session
       const {
         data: { session },
         error: sessionError,
@@ -71,13 +70,12 @@ export class TravelNoteService {
         throw new Error("User must be authenticated to create a travel note");
       }
 
-      // Directly create the travel note with the current session
       const { data, error } = await this.supabase
         .from("travel_notes")
         .insert({
           name: command.name,
           description: command.description,
-          is_public: command.is_public ?? true,
+          is_public: command.is_public ?? false,
           user_id: session.user.id,
         })
         .select("*, attractions(*)")
@@ -222,26 +220,36 @@ export class TravelNoteService {
     }
 
     // Transform to DTO
-    return data.map((attraction) => ({
-      id: attraction.id,
-      name: attraction.name,
-      description: attraction.description,
-      image:
-        attraction.image &&
-        attraction.image_photographer &&
-        attraction.image_photographer_url &&
-        attraction.image_source
-          ? {
-              url: attraction.image,
-              photographer: attraction.image_photographer,
-              photographerUrl: attraction.image_photographer_url,
-              source: attraction.image_source,
-            }
-          : null,
-      latitude: attraction.latitude,
-      longitude: attraction.longitude,
-      created_at: attraction.created_at,
-    }));
+    return data.map(
+      ({
+        id,
+        name,
+        description,
+        image,
+        image_photographer,
+        image_photographer_url,
+        image_source,
+        latitude,
+        longitude,
+        created_at,
+      }) => ({
+        id,
+        name,
+        description,
+        image:
+          image && image_photographer && image_photographer_url && image_source
+            ? {
+                url: image,
+                photographer: image_photographer,
+                photographerUrl: image_photographer_url,
+                source: image_source,
+              }
+            : null,
+        latitude: Number(latitude),
+        longitude: Number(longitude),
+        created_at,
+      })
+    );
   }
 
   async removeAttraction(noteId: string, userId: string, attractionId: string): Promise<void> {

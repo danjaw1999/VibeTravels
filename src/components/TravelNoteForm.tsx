@@ -18,7 +18,7 @@ export default function TravelNoteForm() {
   } = useForm<CreateTravelNoteCommand>({
     resolver: zodResolver(createTravelNoteSchema),
     defaultValues: {
-      is_public: true,
+      is_public: false,
     },
   });
 

@@ -1,10 +1,10 @@
 import OpenAI from "openai";
+import { OPENAI_API_KEY } from "astro:env/server";
 
-if (!import.meta.env.OPENAI_API_KEY) {
+if (!OPENAI_API_KEY) {
   throw new Error("OPENAI_API_KEY environment variable is not set");
 }
 
 export const openai = new OpenAI({
-  apiKey: import.meta.env.OPENAI_API_KEY,
-  organization: import.meta.env.OPENAI_ORGANIZATION_ID,
+  apiKey: OPENAI_API_KEY,
 });

@@ -59,12 +59,12 @@ jobs:
       - name: Create .env.integration file
         run: |
           echo "PUBLIC_ENV_NAME=${{ secrets.PUBLIC_ENV_NAME }}" >> .env.integration
-          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}" >> .env.integration
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env.integration
-          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env.integration
-          echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.integration
-          echo "E2E_USERNAME_ID=${{ secrets.E2E_USERNAME_ID }}" >> .env.integration
-          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.integration
+          echo "PUBLIC_SUPABASE_SERVICE_ROLE_KEY=${{ secrets.PUBLIC_SUPABASE_SERVICE_ROLE_KEY || secrets.PUBLIC_SUPABASE_KEY }}" >> .env.integration
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" >> .env.integration
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.integration
+          echo "PUBLIC_E2E_USERNAME=${{ secrets.PUBLIC_E2E_USERNAME }}" >> .env.integration
+          echo "PUBLIC_E2E_USERNAME_ID=${{ secrets.PUBLIC_E2E_USERNAME_ID }}" >> .env.integration
+          echo "PUBLIC_E2E_PASSWORD=${{ secrets.PUBLIC_E2E_PASSWORD }}" >> .env.integration
 
       - name: Build project
         run: npm run build
@@ -109,12 +109,12 @@ jobs:
 
       - name: Create .env.integration file
         run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env.integration
-          echo "SUPABASE_KEY=${{ secrets.SUPABASE_KEY }}" >> .env.integration
-          echo "E2E_USERNAME=${{ secrets.E2E_USERNAME }}" >> .env.integration
-          echo "E2E_USERNAME_ID=${{ secrets.E2E_USERNAME_ID }}" >> .env.integration
-          echo "E2E_PASSWORD=${{ secrets.E2E_PASSWORD }}" >> .env.integration
-          echo "SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY || secrets.SUPABASE_KEY }}" >> .env.integration
+          echo "PUBLIC_SUPABASE_URL=${{ secrets.PUBLIC_SUPABASE_URL }}" >> .env.integration
+          echo "PUBLIC_SUPABASE_KEY=${{ secrets.PUBLIC_SUPABASE_KEY }}" >> .env.integration
+          echo "PUBLIC_E2E_USERNAME=${{ secrets.PUBLIC_E2E_USERNAME }}" >> .env.integration
+          echo "PUBLIC_E2E_USERNAME_ID=${{ secrets.PUBLIC_E2E_USERNAME_ID }}" >> .env.integration
+          echo "PUBLIC_E2E_PASSWORD=${{ secrets.PUBLIC_E2E_PASSWORD }}" >> .env.integration
+          echo "PUBLIC_SUPABASE_SERVICE_ROLE_KEY=${{ secrets.PUBLIC_SUPABASE_SERVICE_ROLE_KEY || secrets.PUBLIC_SUPABASE_KEY }}" >> .env.integration
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> .env.integration
           echo "PEXELS_API_KEY=${{ secrets.PEXELS_API_KEY }}" >> .env.integration
           echo "PUBLIC_ENV_NAME=${{ secrets.PUBLIC_ENV_NAME }}" >> .env.integration

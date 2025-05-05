@@ -2,13 +2,15 @@ import type { APIRoute } from "astro";
 import { AttractionsService } from "@/lib/services/attractions.service";
 import { TravelNoteService } from "@/lib/services/travel-note.service";
 import type { AttractionSuggestionDTO } from "@/types";
+import { OPENAI_API_KEY, PEXELS_API_KEY } from "astro:env/server";
 
-// Simple in-memory cache with TTL
 const CACHE_TTL = 15 * 60 * 1000; // 15 minutes in milliseconds
+
 interface CacheEntry {
   suggestions: AttractionSuggestionDTO[];
   timestamp: number;
 }
+
 const suggestionsCache = new Map<string, CacheEntry>();
 
 export const GET: APIRoute = async ({ params, locals }) => {
@@ -28,19 +30,51 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // Check cache first
+    if (!OPENAI_API_KEY) {
+      console.error("OpenAI API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: OpenAI API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    if (!PEXELS_API_KEY) {
+      console.error("Pexels API key is missing");
+      return new Response(
+        JSON.stringify({
+          error: "Server configuration error: Pexels API key is missing",
+          debug: "Check environment variables configuration",
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const cacheKey = `${id}-${locals.user.id}`;
     const cachedEntry = suggestionsCache.get(cacheKey);
     const now = Date.now();
 
     if (cachedEntry && now - cachedEntry.timestamp < CACHE_TTL) {
-      return new Response(JSON.stringify({ suggestions: cachedEntry.suggestions, fromCache: true }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          suggestions: cachedEntry.suggestions,
+          fromCache: true,
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
     }
 
-    // Pobierz travel note
     const travelNoteService = new TravelNoteService(locals.supabase);
     const travelNote = await travelNoteService.getTravelNoteById(id);
 
@@ -51,7 +85,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // Sprawdź czy użytkownik jest właścicielem
     if (travelNote.user_id !== locals.user.id) {
       return new Response(JSON.stringify({ error: "Access denied" }), {
         status: 403,
@@ -59,7 +92,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       });
     }
 
-    // Generuj sugestie
     const attractionsService = new AttractionsService(locals.supabase);
     const suggestions = await attractionsService.generateAttractionSuggestions(
       {
@@ -69,7 +101,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       8
     );
 
-    // Cache the results
     suggestionsCache.set(cacheKey, {
       suggestions,
       timestamp: now,
@@ -80,7 +111,6 @@ export const GET: APIRoute = async ({ params, locals }) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error generating suggestions:", error);
     return new Response(
       JSON.stringify({
         error: error instanceof Error ? error.message : "Internal server error",
